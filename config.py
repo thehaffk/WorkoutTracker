@@ -1,28 +1,40 @@
 """
-Конфигурационный файл для приложения
+Конфигурационный файл для приложения системы учёта тренировок
+Содержит все основные настройки приложения включая параметры базы данных,
+настройки безопасности, параметры загрузки файлов и прочие конфигурации
 """
 
 import os
 
 class Config:
-    """Базовая конфигурация"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    
-    # Настройки базы данных MySQL
-    DB_CONFIG = {
-        'host': os.environ.get('DB_HOST', 'localhost'),
-        'user': os.environ.get('DB_USER', 'root'),
-        'password': os.environ.get('DB_PASSWORD', ''),
-        'database': os.environ.get('DB_NAME', 'workout_tracker'),
-        'charset': 'utf8mb4',
-        'autocommit': True
-    }
-    
+    """
+    Базовая конфигурация приложения
+    Данный класс содержит все необходимые параметры для корректной работы системы
+    """
+    # Секретный ключ для сессий и безопасности
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production-please'
+
+    # Настройки базы данных SQLite
+    # Используется SQLite для простоты развёртывания и отладки приложения
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(BASE_DIR, 'workout_tracker.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
     # Настройки загрузки файлов
-    UPLOAD_FOLDER = 'static/uploads'
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-    
-    # Настройки приложения
-    EXERCISES_PER_PAGE = 12
-    WORKOUTS_PER_PAGE = 10
+    # Определяют правила и ограничения для работы с файловыми вложениями
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+    MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # Максимальный размер одного файла - 20MB
+    MAX_TOTAL_SIZE = 100 * 1024 * 1024  # Максимальный суммарный размер файлов на объект - 100MB
+
+    # Разрешённые расширения файлов для загрузки в систему
+    # PNG, JPEG - изображения упражнений и тренировок
+    # PDF - документы с программами тренировок
+    # TXT, CSV, JSON - текстовые данные и экспорты
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'txt', 'csv', 'json'}
+
+    # Настройки пагинации для списков
+    # Определяют количество элементов на странице в различных разделах системы
+    EXERCISES_PER_PAGE = 10  # Количество упражнений на одной странице списка
+    WORKOUTS_PER_PAGE = 10   # Количество тренировок на одной странице списка
+    ITEMS_PER_PAGE = 10      # Общее количество элементов на странице по умолчанию
