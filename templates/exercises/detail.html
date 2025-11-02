@@ -287,15 +287,13 @@
     {% if current_user.role.name in ['editor', 'admin'] %}
         {% if exercise.owner_id == current_user.id or current_user.role.name == 'admin' %}
         <a href="{{ url_for('exercises.edit', id=exercise.id) }}" class="btn btn-edit">Редактировать упражнение</a>
+        <button onclick="showDeleteModal()" class="btn btn-delete">Удалить упражнение</button>
         {% endif %}
-    {% endif %}
-
-    {% if current_user.role.name == 'admin' %}
-    <button onclick="showDeleteModal()" class="btn btn-delete">Удалить упражнение</button>
     {% endif %}
 </div>
 
-{% if current_user.role.name == 'admin' %}
+{% if current_user.role.name in ['editor', 'admin'] %}
+    {% if exercise.owner_id == current_user.id or current_user.role.name == 'admin' %}
 <div id="deleteModal" class="delete-modal">
     <div class="modal-content">
         <h2>Подтверждение удаления упражнения</h2>
@@ -308,6 +306,7 @@
         </div>
     </div>
 </div>
+    {% endif %}
 {% endif %}
 
 <script>

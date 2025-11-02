@@ -286,7 +286,7 @@
 
 {% if current_user.role.name in ['editor', 'admin'] %}
 <div class="exercises-actions">
-    <a href="{{ url_for('exercises.new') }}" class="btn-create">Создать новое упражнение</a>
+    <a href="{{ url_for('exercises.create') }}" class="btn-create">Создать новое упражнение</a>
 </div>
 {% endif %}
 

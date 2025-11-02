@@ -13,6 +13,8 @@ import os
 # Импорт blueprints
 from routes.workouts import workouts_bp
 from routes.exercises import exercises_bp
+from routes.reports import reports_bp
+from routes.files import files_bp
 
 # Инициализация приложения Flask
 app = Flask(__name__)
@@ -23,7 +25,9 @@ db.init_app(app)
 
 # Регистрация blueprints
 app.register_blueprint(workouts_bp)
+app.register_blueprint(reports_bp)
 app.register_blueprint(exercises_bp)
+app.register_blueprint(files_bp)
 
 # Инициализация Flask-Login для управления сессиями пользователей
 login_manager = LoginManager()
@@ -203,12 +207,38 @@ def init_db():
 
         # Создание тестового администратора если пользователей нет
         if User.query.count() == 0:
+            from models import Exercise
+
             admin_role = Role.query.filter_by(name='admin').first()
             admin = User(username='admin', email='admin@example.com', role_id=admin_role.id)
             admin.set_password('Admin123')
             db.session.add(admin)
             db.session.commit()
             print('Тестовый администратор создан: admin / Admin123')
+
+            # Создание публичных упражнений
+            public_exercises = [
+                Exercise(name='Жим штанги лёжа', description='Базовое упражнение для грудных мышц',
+                        muscle_group='Грудь', equipment='Штанга', difficulty='intermediate', is_public=True),
+                Exercise(name='Приседания со штангой', description='Базовое упражнение для ног',
+                        muscle_group='Ноги', equipment='Штанга', difficulty='intermediate', is_public=True),
+                Exercise(name='Становая тяга', description='Базовое упражнение для спины',
+                        muscle_group='Спина', equipment='Штанга', difficulty='advanced', is_public=True),
+                Exercise(name='Подтягивания', description='Упражнение для мышц спины и рук',
+                        muscle_group='Спина', equipment='Турник', difficulty='intermediate', is_public=True),
+                Exercise(name='Отжимания', description='Упражнение для грудных мышц',
+                        muscle_group='Грудь', equipment='Без оборудования', difficulty='beginner', is_public=True),
+                Exercise(name='Жим гантелей сидя', description='Упражнение для плеч',
+                        muscle_group='Плечи', equipment='Гантели', difficulty='intermediate', is_public=True),
+                Exercise(name='Бег', description='Кардио упражнение',
+                        muscle_group='Кардио', equipment='Без оборудования', difficulty='beginner', is_public=True),
+                Exercise(name='Планка', description='Статическое упражнение для пресса',
+                        muscle_group='Пресс', equipment='Без оборудования', difficulty='beginner', is_public=True),
+            ]
+            for exercise in public_exercises:
+                db.session.add(exercise)
+            db.session.commit()
+            print('Публичные упражнения созданы')
 
 
 if __name__ == '__main__':

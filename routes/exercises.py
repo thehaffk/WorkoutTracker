@@ -110,10 +110,10 @@ def detail(id):
     return render_template('exercises/detail.html', exercise=exercise)
 
 
-@exercises_bp.route('/new', methods=['GET', 'POST'])
+@exercises_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 @role_required('editor', 'admin')
-def new():
+def create():
     """
     Создание нового упражнения
     Доступно только для пользователей с ролями editor и admin
@@ -227,14 +227,19 @@ def edit(id):
 
 @exercises_bp.route('/<int:id>/delete', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('editor', 'admin')
 def delete(id):
     """
     Удаление упражнения из системы
-    Доступно только для администраторов
+    Доступно только для владельца упражнения или администратора системы
     Выполняет полное удаление упражнения из базы данных системы
     """
     exercise = Exercise.query.get_or_404(id)
+
+    # Проверка прав на удаление: владелец или администратор
+    if exercise.owner_id != current_user.id and not current_user.is_admin():
+        flash('У вас нет прав для удаления данного упражнения из системы учёта тренировок', 'danger')
+        return redirect(url_for('exercises.detail', id=id))
 
     # Проверка наличия связанных тренировок
     if exercise.workout_exercises:
