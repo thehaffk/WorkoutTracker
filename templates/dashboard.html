@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Главная панель управления - Система управления тренировочным процессом{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 style="text-align: center; margin-bottom: 30px; color: #2a2a2a;">
+            Главная панель управления системой
+        </h1>
+
+        <div style="background-color: #a8a8a8; padding: 20px; border: 2px solid #707070; margin-bottom: 25px;">
+            <h3 style="margin-bottom: 15px;">Приветствие пользователя</h3>
+            <p style="text-align: justify; font-size: 0.95rem; line-height: 1.6;">
+                Уважаемый пользователь <strong>{{ session.username }}</strong>!
+                Приветствуем Вас в информационной системе управления тренировочным процессом.
+                Настоящая система предназначена для осуществления комплексного учёта, планирования
+                и контроля тренировочной деятельности в соответствии с установленными методическими
+                рекомендациями и нормативными требованиями. В рамках функционала системы Вам предоставляется
+                возможность осуществлять ведение личного реестра физических упражнений, формировать
+                и редактировать программы тренировочных занятий, а также получать аналитическую информацию
+                о выполненной работе посредством встроенного модуля формирования отчётной документации.
+            </p>
+        </div>
+
+        <h3 style="margin-bottom: 20px; margin-top: 35px;">Сводная статистическая информация</h3>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div style="background-color: #b5b5b5; padding: 15px; border: 2px solid #808080;">
+                    <h5 style="border-bottom: 2px solid #707070; padding-bottom: 10px; margin-bottom: 15px;">
+                        Статистика по упражнениям
+                    </h5>
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Наименование показателя</th>
+                                <th style="text-align: center; width: 120px;">Значение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Общее количество зарегистрированных упражнений</td>
+                                <td style="text-align: center; font-weight: bold;">{{ stats.total_exercises or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Количество упражнений силового характера</td>
+                                <td style="text-align: center;">{{ stats.strength_exercises or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Количество упражнений кардио-направленности</td>
+                                <td style="text-align: center;">{{ stats.cardio_exercises or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Количество упражнений на гибкость</td>
+                                <td style="text-align: center;">{{ stats.flexibility_exercises or 0 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div style="background-color: #b5b5b5; padding: 15px; border: 2px solid #808080;">
+                    <h5 style="border-bottom: 2px solid #707070; padding-bottom: 10px; margin-bottom: 15px;">
+                        Статистика по тренировкам
+                    </h5>
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Наименование показателя</th>
+                                <th style="text-align: center; width: 120px;">Значение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Общее количество проведённых тренировок</td>
+                                <td style="text-align: center; font-weight: bold;">{{ stats.total_workouts or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Количество тренировок за текущий месяц</td>
+                                <td style="text-align: center;">{{ stats.workouts_this_month or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Количество тренировок за текущую неделю</td>
+                                <td style="text-align: center;">{{ stats.workouts_this_week or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Средняя продолжительность тренировки (мин.)</td>
+                                <td style="text-align: center;">{{ stats.avg_workout_duration or 0 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px; margin-top: 25px;">Навигация по разделам системы</h3>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div style="background-color: #a0a0a0; padding: 20px; border: 2px solid #707070; height: 100%;">
+                    <h5 style="margin-bottom: 15px;">Справочник упражнений</h5>
+                    <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 15px;">
+                        Данный раздел предназначен для осуществления просмотра, добавления, редактирования
+                        и удаления записей о физических упражнениях, содержащихся в базе данных системы.
+                        В рамках функционала раздела обеспечивается возможность классификации упражнений
+                        по различным категориям в соответствии с их характером и направленностью.
+                    </p>
+                    <a href="{{ url_for('exercises_list') }}" class="btn btn-secondary w-100">
+                        Перейти к справочнику упражнений
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div style="background-color: #a0a0a0; padding: 20px; border: 2px solid #707070; height: 100%;">
+                    <h5 style="margin-bottom: 15px;">Реестр тренировок</h5>
+                    <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 15px;">
+                        В настоящем разделе осуществляется ведение учёта всех тренировочных занятий,
+                        проведённых пользователем системы. Раздел предоставляет функционал для создания
+                        новых записей о тренировках, просмотра детальной информации о ранее проведённых
+                        занятиях, а также внесения необходимых корректировок в существующие записи.
+                    </p>
+                    <a href="{{ url_for('workouts_list') }}" class="btn btn-secondary w-100">
+                        Перейти к реестру тренировок
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div style="background-color: #a0a0a0; padding: 20px; border: 2px solid #707070; height: 100%;">
+                    <h5 style="margin-bottom: 15px;">Отчётная документация</h5>
+                    <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 15px;">
+                        Раздел отчётной документации предназначен для формирования и просмотра различных
+                        видов аналитических отчётов, содержащих сводную и детализированную информацию
+                        о тренировочной деятельности пользователя. Функционал раздела обеспечивает
+                        возможность анализа прогресса и выявления динамики развития показателей.
+                    </p>
+                    <a href="{{ url_for('reports') }}" class="btn btn-secondary w-100">
+                        Перейти к отчётной документации
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div style="background-color: #9a9a9a; padding: 20px; border: 2px solid #707070; margin-top: 30px; margin-bottom: 20px;">
+            <h5 style="margin-bottom: 15px;">Дополнительная информация для пользователя</h5>
+            <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 10px;">
+                В процессе работы с информационной системой рекомендуется регулярно осуществлять
+                сохранение вносимых изменений и обеспечивать актуальность данных, содержащихся
+                в базе данных системы. При возникновении каких-либо затруднений в процессе
+                использования функционала системы рекомендуется обратиться к документации
+                пользователя либо связаться с администратором системы для получения необходимой
+                технической поддержки и консультаций.
+            </p>
+            <p style="font-size: 0.85rem; margin-bottom: 0; color: #3a3a3a;">
+                Система разработана в соответствии с требованиями, предъявляемыми к современным
+                веб-приложениям в области управления тренировочным процессом и ведения спортивной документации.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

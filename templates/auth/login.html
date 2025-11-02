@@ -1,31 +1,72 @@
 {% extends "base.html" %}
 
-{% block title %}Вход - WorkoutTracker{% endblock %}
+{% block title %}Авторизация в системе - Система управления тренировочным процессом{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <h1>Вход в систему</h1>
-        
-        <form method="POST" action="{{ url_for('login') }}" class="auth-form">
-            <div class="form-group">
-                <label for="username">Имя пользователя или Email</label>
-                <input type="text" id="username" name="username" required 
-                       placeholder="Введите имя пользователя или email"
-                       value="{{ request.form.username or '' }}">
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div style="background-color: #b0b0b0; padding: 30px; border: 2px solid #808080; margin-top: 30px;">
+            <h2 style="text-align: center; margin-bottom: 25px;">Форма авторизации пользователя в системе</h2>
+
+            <p style="text-align: justify; font-size: 0.9rem; color: #3a3a3a; margin-bottom: 20px;">
+                Для получения доступа к функциональным возможностям системы управления тренировочным процессом
+                необходимо осуществить процедуру авторизации посредством ввода учётных данных пользователя
+                в соответствующие поля формы, представленной ниже.
+            </p>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label" style="font-weight: bold;">
+                        Имя пользователя или адрес электронной почты:
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="username"
+                           name="username"
+                           required
+                           style="background-color: #e0e0e0; border: 1px solid #909090;"
+                           placeholder="Введите имя пользователя или адрес электронной почты"
+                           value="{{ request.form.username or '' }}">
+                    <small class="form-text" style="color: #4a4a4a;">
+                        В данное поле необходимо ввести имя пользователя либо адрес электронной почты,
+                        который был указан при регистрации в системе.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label" style="font-weight: bold;">
+                        Пароль для доступа к учётной записи:
+                    </label>
+                    <input type="password"
+                           class="form-control"
+                           id="password"
+                           name="password"
+                           required
+                           style="background-color: #e0e0e0; border: 1px solid #909090;"
+                           placeholder="Введите пароль">
+                    <small class="form-text" style="color: #4a4a4a;">
+                        Пароль должен соответствовать паролю, который был установлен в процессе
+                        регистрации учётной записи пользователя в системе.
+                    </small>
+                </div>
+
+                <div class="d-grid gap-2" style="margin-top: 25px;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Осуществить вход в систему
+                    </button>
+                </div>
+            </form>
+
+            <hr style="margin-top: 30px; margin-bottom: 20px; border-color: #808080;">
+
+            <div style="text-align: center; background-color: #a0a0a0; padding: 15px; border: 1px solid #707070;">
+                <p style="margin: 0; font-size: 0.95rem;">
+                    В случае отсутствия учётной записи в системе необходимо пройти процедуру регистрации.
+                </p>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary" style="margin-top: 10px; background-color: #888; border-color: #666;">
+                    Перейти к форме регистрации нового пользователя
+                </a>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" required 
-                       placeholder="Введите пароль">
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-block">Войти</button>
-        </form>
-        
-        <div class="auth-footer">
-            <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
         </div>
     </div>
 </div>

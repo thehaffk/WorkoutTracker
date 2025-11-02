@@ -3,74 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Система управления тренировками{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>{% block title %}Система управления тренировочным процессом{% endblock %}</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #d3d3d3;
+            font-family: 'Times New Roman', serif;
+            color: #333;
+        }
+        .navbar {
+            background-color: #a8a8a8 !important;
+            border-bottom: 3px solid #808080;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .navbar-brand {
+            color: #2c2c2c !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .nav-link {
+            color: #2c2c2c !important;
+            font-size: 0.95rem;
+        }
+        .nav-link:hover {
+            color: #000 !important;
+            background-color: #909090;
+        }
+        .container-main {
+            background-color: #c8c8c8;
+            margin-top: 20px;
+            padding: 25px;
+            border: 2px solid #888;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+        }
+        table {
+            background-color: #b8b8b8 !important;
+            border: 2px solid #707070;
+        }
+        table th {
+            background-color: #9a9a9a !important;
+            color: #1a1a1a;
+            border: 1px solid #606060;
+        }
+        table td {
+            background-color: #c0c0c0 !important;
+            border: 1px solid #808080;
+        }
+        .footer {
+            background-color: #999;
+            color: #2c2c2c;
+            padding: 30px 0;
+            margin-top: 50px;
+            border-top: 3px solid #707070;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .btn-primary {
+            background-color: #7a7a7a;
+            border-color: #606060;
+        }
+        .btn-primary:hover {
+            background-color: #5a5a5a;
+            border-color: #4a4a4a;
+        }
+        .alert {
+            border: 2px solid #666;
+        }
+        h1, h2, h3 {
+            color: #2a2a2a;
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Навигация -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="{{ url_for('index') }}">💪 WorkoutTracker</a>
+    <!-- Навигационная панель системы -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Система управления тренировочным процессом</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if session.user_id %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">Главная панель управления</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('exercises_list') }}">Справочник упражнений</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('workouts_list') }}">Реестр тренировок</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('reports') }}">Отчётная документация</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link">Пользователь: {{ session.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Выход из системы</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Вход в систему</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Регистрация нового пользователя</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-            
-            {% if session.user_id %}
-            <ul class="navbar-menu">
-                <li><a href="{{ url_for('workouts_list') }}">Мои тренировки</a></li>
-                <li><a href="{{ url_for('exercises_list') }}">Упражнения</a></li>
-                <li><a href="{{ url_for('calculator') }}">Калькулятор нагрузки</a></li>
-                <li><a href="{{ url_for('reports') }}">Отчёты</a></li>
-                
-                {% if session.is_trainer %}
-                <li><a href="{{ url_for('trainer_panel') }}" class="trainer-link">Панель тренера</a></li>
-                {% endif %}
-                
-                <li class="user-menu">
-                    <span>{{ session.username }}</span>
-                    <a href="{{ url_for('logout') }}" class="btn-logout">Выход</a>
-                </li>
-            </ul>
-            {% else %}
-            <ul class="navbar-menu">
-                <li><a href="{{ url_for('login') }}">Вход</a></li>
-                <li><a href="{{ url_for('register') }}">Регистрация</a></li>
-            </ul>
-            {% endif %}
         </div>
     </nav>
 
-    <!-- Flash сообщения -->
-    <div class="container">
+    <!-- Блок вывода системных уведомлений -->
+    <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            {{ message }}
-                            <button class="close-alert" onclick="this.parentElement.remove()">×</button>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
             {% endif %}
         {% endwith %}
     </div>
 
-    <!-- Основной контент -->
-    <main class="main-content">
-        <div class="container">
-            {% block content %}{% endblock %}
-        </div>
-    </main>
+    <!-- Основной контентный блок страницы -->
+    <div class="container container-main">
+        {% block content %}{% endblock %}
+    </div>
 
-    <!-- Подвал -->
+    <!-- Нижний информационный блок системы -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 Система управления тренировками. Курсовой проект.</p>
+            <p>Настоящая информационная система предназначена для осуществления комплексного управления тренировочным процессом и ведения учёта физических упражнений в соответствии с установленными нормативами и требованиями.</p>
+            <p>Данная система разработана в рамках выполнения курсового проекта по дисциплине "Веб-программирование" и представляет собой программный комплекс для автоматизации процессов планирования, учёта и контроля тренировочной деятельности.</p>
+            <p>Все права защищены. 2025 год. Московский Политехнический Университет.</p>
+            <p style="margin-top: 15px; font-size: 0.8rem;">При использовании системы необходимо соблюдать правила информационной безопасности и обеспечивать сохранность учётных данных.</p>
         </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Bootstrap 5 JavaScript Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
