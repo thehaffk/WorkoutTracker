@@ -1,55 +1,134 @@
 {% extends "base.html" %}
 
-{% block title %}Регистрация - WorkoutTracker{% endblock %}
+{% block title %}Регистрация в системе - Система управления тренировочным процессом{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <h1>Регистрация</h1>
-        
-        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
-            <div class="form-group">
-                <label for="username">Имя пользователя</label>
-                <input type="text" id="username" name="username" required 
-                       placeholder="От 3 до 50 символов"
-                       value="{{ request.form.username or '' }}"
-                       pattern="[A-Za-z0-9_-]+"
-                       title="Только латинские буквы, цифры, _ и -">
-                <small>Только латинские буквы, цифры, _ и -</small>
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div style="background-color: #b0b0b0; padding: 30px; border: 2px solid #808080; margin-top: 30px;">
+            <h2 style="text-align: center; margin-bottom: 25px;">Форма регистрации нового пользователя в системе</h2>
+
+            <p style="text-align: justify; font-size: 0.9rem; color: #3a3a3a; margin-bottom: 20px;">
+                Для создания новой учётной записи в информационной системе управления тренировочным процессом
+                необходимо заполнить все обязательные поля регистрационной формы, расположенной ниже,
+                в соответствии с установленными требованиями к формату вводимых данных.
+                После успешного завершения процедуры регистрации будет осуществлён автоматический переход
+                к форме авторизации для последующего входа в систему с использованием созданных учётных данных.
+            </p>
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label" style="font-weight: bold;">
+                        Имя пользователя (логин для входа в систему):
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="username"
+                           name="username"
+                           required
+                           style="background-color: #e0e0e0; border: 1px solid #909090;"
+                           placeholder="Введите имя пользователя (от 3 до 50 символов)"
+                           value="{{ request.form.username or '' }}"
+                           pattern="[A-Za-z0-9_-]+"
+                           title="Допускаются только латинские буквы, цифры и символы _ и -">
+                    <small class="form-text" style="color: #4a4a4a;">
+                        Имя пользователя должно содержать от 3 до 50 символов и может включать только
+                        латинские буквы (как заглавные, так и строчные), цифры, символы подчёркивания (_)
+                        и дефиса (-). Данное имя будет использоваться для входа в систему.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label" style="font-weight: bold;">
+                        Адрес электронной почты:
+                    </label>
+                    <input type="email"
+                           class="form-control"
+                           id="email"
+                           name="email"
+                           required
+                           style="background-color: #e0e0e0; border: 1px solid #909090;"
+                           placeholder="Введите адрес электронной почты"
+                           value="{{ request.form.email or '' }}">
+                    <small class="form-text" style="color: #4a4a4a;">
+                        Укажите действующий адрес электронной почты, который будет использоваться
+                        для идентификации учётной записи и восстановления доступа к системе в случае необходимости.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label" style="font-weight: bold;">
+                        Пароль для доступа к учётной записи:
+                    </label>
+                    <input type="password"
+                           class="form-control"
+                           id="password"
+                           name="password"
+                           required
+                           style="background-color: #e0e0e0; border: 1px solid #909090;"
+                           placeholder="Введите пароль (минимум 8 символов)">
+                    <small class="form-text" style="color: #4a4a4a;">
+                        Пароль должен содержать не менее 8 символов и обязательно включать в себя
+                        как минимум одну заглавную букву латинского алфавита, одну строчную букву
+                        латинского алфавита и одну цифру. Рекомендуется использовать сложные пароли
+                        для обеспечения надлежащего уровня безопасности учётной записи.
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password_confirm" class="form-label" style="font-weight: bold;">
+                        Подтверждение введённого пароля:
+                    </label>
+                    <input type="password"
+                           class="form-control"
+                           id="password_confirm"
+                           name="password_confirm"
+                           required
+                           style="background-color: #e0e0e0; border: 1px solid #909090;"
+                           placeholder="Повторите введённый пароль">
+                    <small class="form-text" style="color: #4a4a4a;">
+                        В целях предотвращения ошибок при вводе пароля необходимо повторно ввести
+                        тот же самый пароль, который был указан в предыдущем поле. Значения в обоих
+                        полях должны полностью совпадать.
+                    </small>
+                </div>
+
+                <div class="mb-3" style="background-color: #a8a8a8; padding: 15px; border: 1px solid #808080;">
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="is_trainer"
+                               id="is_trainer"
+                               value="1">
+                        <label class="form-check-label" for="is_trainer" style="font-weight: bold;">
+                            Зарегистрироваться в системе в качестве тренера
+                        </label>
+                    </div>
+                    <small class="form-text" style="color: #3a3a3a; display: block; margin-top: 8px;">
+                        При установке данного флажка учётной записи будут предоставлены дополнительные
+                        права и функциональные возможности, предназначенные для пользователей с ролью
+                        "Тренер", включая доступ к расширенным инструментам управления тренировочным процессом.
+                    </small>
+                </div>
+
+                <div class="d-grid gap-2" style="margin-top: 25px;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Зарегистрировать новую учётную запись
+                    </button>
+                </div>
+            </form>
+
+            <hr style="margin-top: 30px; margin-bottom: 20px; border-color: #808080;">
+
+            <div style="text-align: center; background-color: #a0a0a0; padding: 15px; border: 1px solid #707070;">
+                <p style="margin: 0; font-size: 0.95rem;">
+                    В случае если учётная запись в системе уже была создана ранее,
+                    можно осуществить переход к форме авторизации.
+                </p>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary" style="margin-top: 10px; background-color: #888; border-color: #666;">
+                    Перейти к форме авторизации существующего пользователя
+                </a>
             </div>
-            
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required 
-                       placeholder="your@email.com"
-                       value="{{ request.form.email or '' }}">
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" required 
-                       placeholder="Минимум 8 символов">
-                <small>Минимум 8 символов, заглавная буква, строчная буква, цифра</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="password_confirm">Подтверждение пароля</label>
-                <input type="password" id="password_confirm" name="password_confirm" required 
-                       placeholder="Повторите пароль">
-            </div>
-            
-            <div class="form-group checkbox-group">
-                <label>
-                    <input type="checkbox" name="is_trainer" value="1">
-                    Я тренер (получу дополнительные права)
-                </label>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
-        </form>
-        
-        <div class="auth-footer">
-            <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
         </div>
     </div>
 </div>
