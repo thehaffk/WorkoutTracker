@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Список тренировок - WorkoutTracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .workouts-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: #a8a8a8;
+        color: #2c2c2c;
+        padding: 25px;
+        margin-bottom: 25px;
+        border: 2px solid #888;
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .page-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 1.8em;
+        color: #2c2c2c;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #3c3c3c;
+    }
+
+    .filters-panel {
+        background: #b8b8b8;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 2px solid #888;
+    }
+
+    .filters-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        margin-bottom: 5px;
+        color: #4a5568;
+        font-weight: 500;
+        font-size: 0.9em;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 8px;
+        border: 2px solid #888;
+        font-size: 0.95em;
+        background: #d8d8d8;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: 2px solid #666;
+        cursor: pointer;
+        font-size: 0.9em;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        background: #a0a0a0;
+        color: #2c2c2c;
+    }
+
+    .btn-primary {
+        background: #8a8a8a;
+        color: #1c1c1c;
+        border-color: #606060;
+    }
+
+    .btn-primary:hover {
+        background: #7a7a7a;
+    }
+
+    .btn-secondary {
+        background: #9a9a9a;
+        color: #2c2c2c;
+        border-color: #707070;
+    }
+
+    .btn-secondary:hover {
+        background: #8a8a8a;
+    }
+
+    .btn-danger {
+        background: #b88888;
+        color: #2c2c2c;
+        border-color: #906060;
+    }
+
+    .btn-danger:hover {
+        background: #a87878;
+    }
+
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .workout-card {
+        background: #c0c0c0;
+        border: 2px solid #888;
+        padding: 18px;
+        margin-bottom: 12px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .workout-card:hover {
+        background: #c8c8c8;
+    }
+
+    .workout-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .workout-title {
+        flex-grow: 1;
+    }
+
+    .workout-title h3 {
+        margin: 0 0 5px 0;
+        color: #2a2a2a;
+    }
+
+    .workout-date {
+        color: #5a5a5a;
+        font-size: 0.85em;
+    }
+
+    .workout-type {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #909090;
+        color: #1c1c1c;
+        border: 1px solid #707070;
+        font-size: 0.85em;
+        margin-left: 15px;
+    }
+
+    .workout-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .info-item {
+        background: #acacac;
+        padding: 10px;
+        border: 1px solid #888;
+    }
+
+    .info-label {
+        color: #4a4a4a;
+        font-size: 0.8em;
+        margin-bottom: 3px;
+    }
+
+    .info-value {
+        color: #1a1a1a;
+        font-weight: 600;
+        font-size: 1em;
+    }
+
+    .workout-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-small {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 30px;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 6px 10px;
+        background: #a8a8a8;
+        color: #2c2c2c;
+        text-decoration: none;
+        border: 1px solid #808080;
+    }
+
+    .pagination a:hover {
+        background: #989898;
+    }
+
+    .pagination .active {
+        background: #888888;
+        color: #1c1c1c;
+        font-weight: bold;
+    }
+
+    .pagination .disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        background: #b8b8b8;
+        border: 2px solid #888;
+    }
+
+    .empty-state h3 {
+        color: #4a4a4a;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="workouts-container">
+    <div class="page-header">
+        <h1>Реестр тренировочных занятий пользователя</h1>
+        <p>Данный раздел системы предназначен для осуществления управления тренировочными занятиями и мониторинга прогресса физического развития</p>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="filters-panel">
+        <form method="GET" class="filters-form">
+            <div class="form-group">
+                <label for="date_from">Начальная дата периода:</label>
+                <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="form-group">
+                <label for="date_to">Конечная дата периода:</label>
+                <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <div class="form-group">
+                <label for="workout_type">Тип тренировочного занятия:</label>
+                <select id="workout_type" name="workout_type">
+                    <option value="">Все типы тренировок</option>
+                    {% for type in workout_types %}
+                    <option value="{{ type }}" {% if workout_type == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Применить установленные фильтры</button>
+            </div>
+            <div class="form-group">
+                <a href="{{ url_for('workouts.list') }}" class="btn btn-secondary">Сбросить все фильтры</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Действия -->
+    <div class="action-bar">
+        <div>
+            <strong>Количество найденных тренировочных занятий в системе:</strong> {{ pagination.total }}
+        </div>
+        <a href="{{ url_for('workouts.new') }}" class="btn btn-primary">Создать новое тренировочное занятие</a>
+    </div>
+
+    <!-- Список тренировок -->
+    {% if workouts %}
+        {% for workout in workouts %}
+        <div class="workout-card">
+            <div class="workout-header">
+                <div class="workout-title">
+                    <h3>Тренировочное занятие от {{ workout.date.strftime('%d.%m.%Y') }}</h3>
+                    <div class="workout-date">
+                        Дата внесения записи в систему: {{ workout.created_at.strftime('%d.%m.%Y в %H:%M') }}
+                        {% if current_user.is_admin() and workout.owner_id != current_user.id %}
+                        | Ответственный пользователь: {{ workout.owner.username }}
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="workout-type">{{ workout.workout_type }}</span>
+            </div>
+
+            <div class="workout-info">
+                <div class="info-item">
+                    <div class="info-label">Общая длительность занятия</div>
+                    <div class="info-value">{{ workout.duration if workout.duration else '—' }} мин</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Количество выполненных упражнений</div>
+                    <div class="info-value">{{ workout.workout_exercises|length }}</div>
+                </div>
+            </div>
+
+            {% if workout.notes %}
+            <div style="color: #718096; margin-bottom: 15px; font-style: italic;">
+                {{ workout.notes[:100] }}{% if workout.notes|length > 100 %}...{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="workout-actions">
+                <a href="{{ url_for('workouts.view', id=workout.id) }}" class="btn btn-primary btn-small">Просмотреть подробную информацию</a>
+                {% if workout.owner_id == current_user.id or current_user.is_admin() %}
+                <a href="{{ url_for('workouts.edit', id=workout.id) }}" class="btn btn-secondary btn-small">Редактировать данные занятия</a>
+                <form method="POST" action="{{ url_for('workouts.delete', id=workout.id) }}" style="display: inline;"
+                      onsubmit="return confirm('Вы действительно уверены что хотите безвозвратно удалить данное тренировочное занятие из системы?');">
+                    <button type="submit" class="btn btn-danger btn-small">Удалить занятие из системы</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Пагинация -->
+        {% if pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('workouts.list', page=pagination.prev_num, date_from=date_from, date_to=date_to, workout_type=workout_type) }}">« Предыдущая</a>
+            {% else %}
+            <span class="disabled">« Предыдущая</span>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <span class="active">{{ page_num }}</span>
+                    {% else %}
+                    <a href="{{ url_for('workouts.list', page=page_num, date_from=date_from, date_to=date_to, workout_type=workout_type) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                <span>...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <a href="{{ url_for('workouts.list', page=pagination.next_num, date_from=date_from, date_to=date_to, workout_type=workout_type) }}">Следующая »</a>
+            {% else %}
+            <span class="disabled">Следующая »</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <h3>Тренировочные занятия не обнаружены в системе</h3>
+            <p>Для начала работы с системой рекомендуется приступить к процессу добавления ваших тренировочных занятий с целью дальнейшего отслеживания динамики прогресса</p>
+            <a href="{{ url_for('workouts.new') }}" class="btn btn-primary" style="margin-top: 15px;">Создать первое тренировочное занятие</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
