@@ -1,70 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Авторизация в системе - Система управления тренировочным процессом{% endblock %}
+{% block title %}Прохождение в зону - ШПИЦ-ЗОНА{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div style="background-color: #b0b0b0; padding: 30px; border: 2px solid #808080; margin-top: 30px;">
-            <h2 style="text-align: center; margin-bottom: 25px;">Форма авторизации пользователя в системе</h2>
+        <div style="background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); padding: 30px; border: 4px groove #666; margin-top: 30px;">
+            <h2 style="text-align: center; margin-bottom: 25px; color: #ff6600;">
+                🔒 ПРОХОЖДЕНИЕ ЧЕРЕЗ КПП 🔒
+            </h2>
 
-            <p style="text-align: justify; font-size: 0.9rem; color: #3a3a3a; margin-bottom: 20px;">
-                Для получения доступа к функциональным возможностям системы управления тренировочным процессом
-                необходимо осуществить процедуру авторизации посредством ввода учётных данных пользователя
-                в соответствующие поля формы, представленной ниже.
+            <p style="text-align: justify; font-size: 0.95rem; color: #ccc; margin-bottom: 20px; font-family: Arial, sans-serif; font-weight: bold;">
+                ⚠️ Для прохождения в качалку строгого режима "ШПИЦ-ЗОНА"
+                необходимо предъявить охране свои учётные данные.
+                Введи логин и пароль в поля ниже. Без документов на зону не пропустят!
             </p>
 
             <form method="POST" action="{{ url_for('login') }}">
                 <div class="mb-3">
-                    <label for="username" class="form-label" style="font-weight: bold;">
-                        Имя пользователя или адрес электронной почты:
+                    <label for="username" class="form-label" style="font-weight: bold; color: #ff6600;">
+                        🔑 Логин (кличка заключённого):
                     </label>
                     <input type="text"
                            class="form-control"
                            id="username"
                            name="username"
                            required
-                           style="background-color: #e0e0e0; border: 1px solid #909090;"
-                           placeholder="Введите имя пользователя или адрес электронной почты"
+                           style="background-color: #1a1a1a; border: 2px solid #666; color: #fff;"
+                           placeholder="Введи свою кличку"
                            value="{{ request.form.username or '' }}">
-                    <small class="form-text" style="color: #4a4a4a;">
-                        В данное поле необходимо ввести имя пользователя либо адрес электронной почты,
-                        который был указан при регистрации в системе.
+                    <small class="form-text" style="color: #999;">
+                        Та самая кличка, под которой ты числишься на зоне.
                     </small>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label" style="font-weight: bold;">
-                        Пароль для доступа к учётной записи:
+                    <label for="password" class="form-label" style="font-weight: bold; color: #ff6600;">
+                        🔐 Пароль (шифр доступа):
                     </label>
                     <input type="password"
                            class="form-control"
                            id="password"
                            name="password"
                            required
-                           style="background-color: #e0e0e0; border: 1px solid #909090;"
-                           placeholder="Введите пароль">
-                    <small class="form-text" style="color: #4a4a4a;">
-                        Пароль должен соответствовать паролю, который был установлен в процессе
-                        регистрации учётной записи пользователя в системе.
+                           style="background-color: #1a1a1a; border: 2px solid #666; color: #fff;"
+                           placeholder="Введи секретный шифр">
+                    <small class="form-text" style="color: #999;">
+                        Тот самый пароль, что давал при постановке на учёт. Не забыл?
                     </small>
                 </div>
 
                 <div class="d-grid gap-2" style="margin-top: 25px;">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        Осуществить вход в систему
+                        ⛓️ ВОЙТИ В ЗОНУ
                     </button>
                 </div>
             </form>
 
-            <hr style="margin-top: 30px; margin-bottom: 20px; border-color: #808080;">
+            <hr style="margin-top: 30px; margin-bottom: 20px; border-color: #666; border-width: 2px;">
 
-            <div style="text-align: center; background-color: #a0a0a0; padding: 15px; border: 1px solid #707070;">
-                <p style="margin: 0; font-size: 0.95rem;">
-                    В случае отсутствия учётной записи в системе необходимо пройти процедуру регистрации.
+            <div style="text-align: center; background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); padding: 15px; border: 2px groove #666;">
+                <p style="margin: 0; font-size: 0.95rem; color: #ccc; font-weight: bold;">
+                    🆕 Ещё не числишься на зоне? Пройди постановку на учёт!
                 </p>
-                <a href="{{ url_for('register') }}" class="btn btn-secondary" style="margin-top: 10px; background-color: #888; border-color: #666;">
-                    Перейти к форме регистрации нового пользователя
+                <a href="{{ url_for('register') }}" class="btn btn-secondary" style="margin-top: 10px;">
+                    📝 ПОСТАНОВКА НА УЧЁТ
                 </a>
             </div>
         </div>

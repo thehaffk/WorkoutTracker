@@ -3,120 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Система управления тренировочным процессом{% endblock %}</title>
+    <title>{% block title %}ШПИЦ-ЗОНА: Система Учёта Тренировок{% endblock %}</title>
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        /* Prison theme styles */
         body {
-            background-color: #d3d3d3;
-            font-family: 'Times New Roman', serif;
-            color: #333;
+            background: linear-gradient(
+                to bottom,
+                #1a1a1a 0%,
+                #2a2a2a 50%,
+                #1a1a1a 100%
+            );
+            font-family: Impact, 'Arial Black', sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
         }
+
+        /* Prison stripes background pattern */
+        .prison-stripes {
+            background: repeating-linear-gradient(
+                0deg,
+                #000000,
+                #000000 20px,
+                #ffffff 20px,
+                #ffffff 40px
+            );
+        }
+
         .navbar {
-            background-color: #a8a8a8 !important;
-            border-bottom: 3px solid #808080;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+            border-bottom: 4px groove #ff6600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8), inset 0 -2px 10px rgba(255,102,0,0.3);
+            padding: 1rem 0;
         }
+
         .navbar-brand {
-            color: #2c2c2c !important;
-            font-weight: bold;
-            font-size: 1.1rem;
+            color: #ff6600 !important;
+            font-weight: 900;
+            font-size: 1.4rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+
+        .navbar-brand img {
+            height: 50px;
+            width: 50px;
+            border: 3px solid #ff6600;
+            border-radius: 50%;
+            background: white;
+            padding: 2px;
+            box-shadow: 0 0 10px rgba(255,102,0,0.5);
+        }
+
         .nav-link {
-            color: #2c2c2c !important;
+            color: #cccccc !important;
             font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
         }
+
         .nav-link:hover {
-            color: #000 !important;
-            background-color: #909090;
+            color: #ff6600 !important;
+            text-shadow: 0 0 10px rgba(255,102,0,0.8);
+            transform: scale(1.05);
         }
+
         .container-main {
-            background-color: #c8c8c8;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
             margin-top: 20px;
             padding: 25px;
-            border: 2px solid #888;
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+            border: 4px groove #666;
+            box-shadow:
+                0 0 30px rgba(0,0,0,0.9),
+                inset 0 0 20px rgba(0,0,0,0.5),
+                inset -5px 0 15px rgba(0,0,0,0.4),
+                inset 5px 0 15px rgba(0,0,0,0.4);
+            position: relative;
         }
+
+        /* Bar shadow effect */
+        .container-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 45px,
+                rgba(0,0,0,0.3) 45px,
+                rgba(0,0,0,0.3) 50px
+            );
+            pointer-events: none;
+        }
+
         table {
-            background-color: #b8b8b8 !important;
-            border: 2px solid #707070;
+            background-color: #1a1a1a !important;
+            border: 3px groove #666;
         }
+
         table th {
-            background-color: #9a9a9a !important;
-            color: #1a1a1a;
-            border: 1px solid #606060;
+            background-color: #ff6600 !important;
+            color: #000000;
+            border: 2px groove #444;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+
         table td {
-            background-color: #c0c0c0 !important;
-            border: 1px solid #808080;
+            background-color: #2a2a2a !important;
+            border: 1px solid #444;
+            color: #ffffff;
         }
+
         .footer {
-            background-color: #999;
-            color: #2c2c2c;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            color: #ff6600;
             padding: 30px 0;
             margin-top: 50px;
-            border-top: 3px solid #707070;
+            border-top: 4px groove #ff6600;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.8);
         }
+
         .btn-primary {
-            background-color: #7a7a7a;
-            border-color: #606060;
+            background: linear-gradient(135deg, #ff6600 0%, #cc5200 100%);
+            border: 3px groove #ff6600;
+            color: #000000;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 10px rgba(255,102,0,0.4);
+            transition: all 0.3s;
         }
+
         .btn-primary:hover {
-            background-color: #5a5a5a;
-            border-color: #4a4a4a;
+            background: linear-gradient(135deg, #cc5200 0%, #ff6600 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255,102,0,0.6);
         }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+            border: 3px groove #666;
+            color: #ffffff;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+            border: 3px groove #dc3545;
+            font-weight: 900;
+        }
+
         .alert {
-            border: 2px solid #666;
+            border: 3px groove #666;
+            border-radius: 0;
+            font-weight: bold;
+            text-transform: uppercase;
         }
+
+        .alert-success {
+            background-color: #28a745;
+            color: #000;
+            border-color: #28a745;
+        }
+
+        .alert-danger {
+            background-color: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+        .alert-warning {
+            background-color: #ff6600;
+            color: #000;
+            border-color: #ff6600;
+        }
+
         h1, h2, h3 {
-            color: #2a2a2a;
+            color: #ff6600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-weight: 900;
+        }
+
+        /* Chain decoration */
+        .chain-icon::before {
+            content: '⛓️';
+            margin-right: 8px;
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Навигационная панель системы -->
-    <nav class="navbar navbar-expand-lg navbar-light">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Система управления тренировочным процессом</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Шпиц-зона">
+                <span>ШПИЦ-ЗОНА: Система Учёта Тренировок</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: #ff6600;">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('dashboard') }}">Главная панель управления</a>
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">⛓️ Каптёрка (главная)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('workouts.list') }}">Реестр тренировок</a>
+                            <a class="nav-link" href="{{ url_for('workouts.list') }}">📋 Журнал отработок</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('exercises.list') }}">Каталог упражнений</a>
+                            <a class="nav-link" href="{{ url_for('exercises.list') }}">💪 Нормативы зоны</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('reports.index') }}">Отчёты и аналитика</a>
+                            <a class="nav-link" href="{{ url_for('reports.index') }}">📊 Докладные начальнику</a>
                         </li>
                         <li class="nav-item">
-                            <span class="nav-link">Пользователь: {{ current_user.username }} ({{ current_user.role.name }})</span>
+                            <span class="nav-link" style="color: #ff6600;">Заключённый: {{ current_user.username }} ({{ current_user.role.name }})</span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('logout') }}">Выход из системы</a>
+                            <a class="nav-link chain-icon" href="{{ url_for('logout') }}">Освобождение УДО</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Вход в систему</a>
+                            <a class="nav-link" href="{{ url_for('login') }}">🔒 Прохождение в зону</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('register') }}">Регистрация нового пользователя</a>
+                            <a class="nav-link" href="{{ url_for('register') }}">📝 Постановка на учёт</a>
                         </li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Prison subtitle -->
+    <div class="container text-center mt-2 mb-3">
+        <h5 style="color: #999; font-size: 0.9rem; font-weight: normal; font-family: Arial, sans-serif;">
+            🏋️ Качалка строгого режима 🏋️
+        </h5>
+    </div>
 
     <!-- Блок вывода системных уведомлений -->
     <div class="container mt-3">
@@ -140,10 +281,21 @@
     <!-- Нижний информационный блок системы -->
     <footer class="footer">
         <div class="container">
-            <p>Настоящая информационная система предназначена для осуществления комплексного управления тренировочным процессом и ведения учёта физических упражнений в соответствии с установленными нормативами и требованиями.</p>
-            <p>Данная система разработана в рамках выполнения курсового проекта по дисциплине "Веб-программирование" и представляет собой программный комплекс для автоматизации процессов планирования, учёта и контроля тренировочной деятельности.</p>
-            <p>Все права защищены. 2025 год. Московский Политехнический Университет.</p>
-            <p style="margin-top: 15px; font-size: 0.8rem;">При использовании системы необходимо соблюдать правила информационной безопасности и обеспечивать сохранность учётных данных.</p>
+            <p style="font-size: 1.2rem; font-weight: 900; margin-bottom: 20px;">
+                ⛓️ ОТБЫВАЙ СРОК С ПОЛЬЗОЙ! ⛓️
+            </p>
+            <p style="color: #ccc; font-family: Arial, sans-serif; font-weight: normal;">
+                Исправительная качалка "ШПИЦ-ЗОНА" осуществляет комплексный надзор за выполнением нормативов физической подготовки заключённых в соответствии с режимом строгости и установленным распорядком дня.
+            </p>
+            <p style="color: #ccc; font-family: Arial, sans-serif; font-weight: normal;">
+                Система разработана для автоматизации учёта отработок, контроля выполнения плана и формирования докладных записок начальству. Помни: дисциплина - путь к УДО!
+            </p>
+            <p style="margin-top: 20px; font-size: 1rem;">
+                🐕 Администрация Шпиц-Зоны © 2025 🐕
+            </p>
+            <p style="margin-top: 15px; font-size: 0.75rem; color: #888; font-family: Arial, sans-serif; font-weight: normal;">
+                При попытке побега система автоматически уведомляет охрану. Соблюдай режим и береги учётные данные!
+            </p>
         </div>
     </footer>
 
