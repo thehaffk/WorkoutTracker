@@ -17,8 +17,9 @@ class Config:
     # Настройки базы данных SQLite
     # Используется SQLite для простоты развёртывания и отладки приложения
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    DB_PATH = os.environ.get('DB_PATH') or os.path.join(BASE_DIR, 'workout_tracker.db')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(BASE_DIR, 'workout_tracker.db')
+        'sqlite:///' + DB_PATH
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Настройки загрузки файлов
