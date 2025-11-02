@@ -32,6 +32,7 @@ services:
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=production-secret-key-change-me
+      - DB_PATH=/tmp/workout_tracker.db
 
     # Политика перезапуска контейнера
     # always означает что контейнер будет автоматически перезапускаться
