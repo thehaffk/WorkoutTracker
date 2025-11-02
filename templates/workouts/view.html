@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+
+{% block title %}Тренировочное занятие {{ workout.date.strftime('%d.%m.%Y') }} - WorkoutTracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .workout-view {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .workout-header {
+        background: #a8a8a8;
+        color: #2c2c2c;
+        padding: 25px;
+        margin-bottom: 25px;
+        border: 2px solid #888;
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .workout-header h1 {
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .workout-type-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #909090;
+        color: #1c1c1c;
+        border: 1px solid #707070;
+        font-size: 0.7em;
+    }
+
+    .workout-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        opacity: 0.9;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .info-card {
+        background: #c0c0c0;
+        border: 2px solid #888;
+        padding: 18px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .info-card h3 {
+        margin: 0 0 12px 0;
+        color: #2a2a2a;
+        font-size: 1em;
+        border-bottom: 2px solid #888;
+        padding-bottom: 8px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #718096;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #2d3748;
+        font-weight: 600;
+    }
+
+    .notes-card {
+        background: #b8b8b8;
+        border: 2px solid #888;
+        padding: 18px;
+        margin-bottom: 25px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .notes-card h3 {
+        margin: 0 0 10px 0;
+        color: #2a2a2a;
+    }
+
+    .notes-card p {
+        margin: 0;
+        color: #3c3c3c;
+        line-height: 1.6;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #cbd5e0;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        color: #2d3748;
+    }
+
+    .exercise-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .exercise-item {
+        background: #c0c0c0;
+        border: 2px solid #888;
+        padding: 18px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 18px;
+        align-items: center;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .exercise-order {
+        background: #888;
+        color: #1c1c1c;
+        width: 38px;
+        height: 38px;
+        border: 2px solid #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    .exercise-details {
+        flex-grow: 1;
+    }
+
+    .exercise-name {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+
+    .exercise-meta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .meta-badge {
+        padding: 3px 10px;
+        background: #acacac;
+        border: 1px solid #888;
+        font-size: 0.8em;
+        color: #2c2c2c;
+    }
+
+    .exercise-params {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .param {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+    }
+
+    .param-label {
+        color: #718096;
+        font-size: 0.9em;
+    }
+
+    .param-value {
+        color: #2d3748;
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    .exercise-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: 2px solid #666;
+        cursor: pointer;
+        font-size: 0.9em;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        background: #a0a0a0;
+        color: #2c2c2c;
+    }
+
+    .btn-small {
+        padding: 5px 10px;
+        font-size: 0.8em;
+    }
+
+    .btn-primary {
+        background: #8a8a8a;
+        color: #1c1c1c;
+        border-color: #606060;
+    }
+
+    .btn-primary:hover {
+        background: #7a7a7a;
+    }
+
+    .btn-secondary {
+        background: #9a9a9a;
+        color: #2c2c2c;
+        border-color: #707070;
+    }
+
+    .btn-secondary:hover {
+        background: #8a8a8a;
+    }
+
+    .btn-danger {
+        background: #b88888;
+        color: #2c2c2c;
+        border-color: #906060;
+    }
+
+    .btn-danger:hover {
+        background: #a87878;
+    }
+
+    .add-exercise-form {
+        background: #b8b8b8;
+        border: 2px solid #888;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .add-exercise-form h3 {
+        margin: 0 0 12px 0;
+        color: #2a2a2a;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        margin-bottom: 5px;
+        color: #4a5568;
+        font-weight: 500;
+        font-size: 0.9em;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 8px;
+        border: 2px solid #888;
+        font-size: 0.95em;
+        background: #d8d8d8;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        background: #b8b8b8;
+        border: 2px solid #888;
+        margin-bottom: 25px;
+    }
+
+    .empty-state h3 {
+        color: #4a4a4a;
+        margin-bottom: 10px;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-start;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="workout-view">
+    <!-- Заголовок тренировки -->
+    <div class="workout-header">
+        <h1>
+            Тренировочное занятие от {{ workout.date.strftime('%d.%m.%Y') }}
+            <span class="workout-type-badge">{{ workout.workout_type }}</span>
+        </h1>
+        <div class="workout-meta">
+            <div class="meta-item">
+                <strong>Дата внесения записи в систему:</strong> {{ workout.created_at.strftime('%d.%m.%Y в %H:%M') }}
+            </div>
+            {% if current_user.is_admin() and workout.owner_id != current_user.id %}
+            <div class="meta-item">
+                <strong>Ответственный пользователь:</strong> {{ workout.owner.username }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Действия -->
+    <div class="action-bar">
+        <a href="{{ url_for('workouts.list') }}" class="btn btn-secondary">← Вернуться к списку занятий</a>
+        {% if workout.owner_id == current_user.id or current_user.is_admin() %}
+        <a href="{{ url_for('workouts.edit', id=workout.id) }}" class="btn btn-primary">Редактировать параметры занятия</a>
+        <form method="POST" action="{{ url_for('workouts.delete', id=workout.id) }}" style="display: inline;"
+              onsubmit="return confirm('Вы действительно уверены что хотите безвозвратно удалить данное тренировочное занятие из системы?');">
+            <button type="submit" class="btn btn-danger">Удалить занятие из системы</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Основная информация -->
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>Общая информация о занятии</h3>
+            <div class="info-row">
+                <span class="info-label">Дата проведения занятия:</span>
+                <span class="info-value">{{ workout.date.strftime('%d.%m.%Y') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Тип тренировочного занятия:</span>
+                <span class="info-value">{{ workout.workout_type }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Общая длительность занятия:</span>
+                <span class="info-value">{{ workout.duration if workout.duration else '—' }} мин</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>Статистические данные</h3>
+            <div class="info-row">
+                <span class="info-label">Количество упражнений:</span>
+                <span class="info-value">{{ workout_exercises|length }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Общее количество подходов:</span>
+                <span class="info-value">{{ workout_exercises|sum(attribute='sets') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Заметки -->
+    {% if workout.notes %}
+    <div class="notes-card">
+        <h3>Заметки о проведённом тренировочном занятии</h3>
+        <p>{{ workout.notes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Упражнения -->
+    <div class="section-header">
+        <h2>Перечень упражнений в составе тренировочного занятия</h2>
+    </div>
+
+    {% if workout_exercises %}
+    <div class="exercise-list">
+        {% for we in workout_exercises %}
+        <div class="exercise-item">
+            <div class="exercise-order">{{ loop.index }}</div>
+
+            <div class="exercise-details">
+                <div class="exercise-name">{{ we.exercise.name }}</div>
+
+                <div class="exercise-meta">
+                    <span class="meta-badge">{{ we.exercise.muscle_group }}</span>
+                    {% if we.exercise.equipment %}
+                    <span class="meta-badge">{{ we.exercise.equipment }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="exercise-params">
+                    <div class="param">
+                        <span class="param-label">Количество подходов:</span>
+                        <span class="param-value">{{ we.sets }}</span>
+                    </div>
+                    <div class="param">
+                        <span class="param-label">Количество повторений:</span>
+                        <span class="param-value">{{ we.reps }}</span>
+                    </div>
+                    {% if we.weight %}
+                    <div class="param">
+                        <span class="param-label">Используемый вес:</span>
+                        <span class="param-value">{{ we.weight }} кг</span>
+                    </div>
+                    {% endif %}
+                    {% if we.duration %}
+                    <div class="param">
+                        <span class="param-label">Длительность выполнения:</span>
+                        <span class="param-value">{{ we.duration }} сек</span>
+                    </div>
+                    {% endif %}
+                    {% if we.distance %}
+                    <div class="param">
+                        <span class="param-label">Пройденная дистанция:</span>
+                        <span class="param-value">{{ we.distance }} км</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if we.notes %}
+                <div style="margin-top: 10px; color: #718096; font-style: italic;">
+                    {{ we.notes }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if workout.owner_id == current_user.id or current_user.is_admin() %}
+            <div class="exercise-actions">
+                <form method="POST" action="{{ url_for('workouts.delete_exercise', id=workout.id, ex_id=we.id) }}" style="display: inline;"
+                      onsubmit="return confirm('Вы действительно хотите удалить данное упражнение из тренировочного занятия?');">
+                    <button type="submit" class="btn btn-danger btn-small">Удалить упражнение</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>В данном тренировочном занятии пока отсутствуют упражнения</h3>
+        <p>Необходимо добавить упражнения в тренировочное занятие для осуществления процесса отслеживания вашего прогресса</p>
+    </div>
+    {% endif %}
+
+    <!-- Форма добавления упражнения -->
+    {% if workout.owner_id == current_user.id or current_user.is_admin() %}
+    <div class="add-exercise-form">
+        <h3>Добавление упражнения в состав тренировочного занятия</h3>
+        <form method="POST" action="{{ url_for('workouts.add_exercise', id=workout.id) }}">
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="exercise_id">Упражнение из доступного перечня *</label>
+                    <select id="exercise_id" name="exercise_id" required>
+                        <option value="">Выберите упражнение из доступного списка упражнений</option>
+                        {% for exercise in available_exercises %}
+                        <option value="{{ exercise.id }}">{{ exercise.name }} - {{ exercise.muscle_group }} ({{ exercise.equipment or 'Без оборудования' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sets">Количество подходов *</label>
+                    <input type="number" id="sets" name="sets" min="1" value="3" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reps">Количество повторений *</label>
+                    <input type="number" id="reps" name="reps" min="1" value="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="weight">Используемый вес (кг)</label>
+                    <input type="number" id="weight" name="weight" step="0.1" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="duration">Длительность выполнения (сек)</label>
+                    <input type="number" id="duration" name="duration" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="distance">Пройденная дистанция (км)</label>
+                    <input type="number" id="distance" name="distance" step="0.01" min="0">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="notes">Дополнительные заметки</label>
+                    <textarea id="notes" name="notes" rows="2" placeholder="Укажите дополнительную информацию о выполнении упражнения..."></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <button type="submit" class="btn btn-primary">Добавить упражнение в тренировочное занятие</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}{% if workout %}Редактировать{% else %}Создать{% endif %} тренировку - WorkoutTracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        background: #a8a8a8;
+        color: #2c2c2c;
+        padding: 25px;
+        margin-bottom: 25px;
+        border: 2px solid #888;
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .page-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 1.8em;
+        color: #2c2c2c;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #3c3c3c;
+    }
+
+    .form-card {
+        background: #c0c0c0;
+        border: 2px solid #888;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2d3748;
+        font-weight: 600;
+        font-size: 0.95em;
+    }
+
+    .required::after {
+        content: " *";
+        color: #e53e3e;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #888;
+        font-size: 0.95em;
+        background: #d8d8d8;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #666;
+        background: #e0e0e0;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+
+    .form-hint {
+        display: block;
+        margin-top: 5px;
+        color: #718096;
+        font-size: 0.85em;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #cbd5e0;
+    }
+
+    .btn {
+        padding: 10px 24px;
+        border: 2px solid #666;
+        cursor: pointer;
+        font-size: 0.95em;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: #8a8a8a;
+        color: #1c1c1c;
+        border-color: #606060;
+    }
+
+    .btn-primary:hover {
+        background: #7a7a7a;
+    }
+
+    .btn-secondary {
+        background: #9a9a9a;
+        color: #2c2c2c;
+        border-color: #707070;
+    }
+
+    .btn-secondary:hover {
+        background: #8a8a8a;
+    }
+
+    .info-box {
+        background: #acacac;
+        border-left: 4px solid #888;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 2px solid #888;
+    }
+
+    .info-box h3 {
+        margin: 0 0 10px 0;
+        color: #2a2a2a;
+        font-size: 1em;
+    }
+
+    .info-box p {
+        margin: 0;
+        color: #3c3c3c;
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="page-header">
+        <h1>{% if workout %}Редактирование тренировочного занятия{% else %}Создание нового тренировочного занятия{% endif %}</h1>
+        <p>{% if workout %}В данном разделе вы можете осуществить изменение параметров вашего тренировочного занятия{% else %}Необходимо заполнить основные сведения о проведённом тренировочном занятии для внесения в систему{% endif %}</p>
+    </div>
+
+    {% if not workout %}
+    <div class="info-box">
+        <h3>Информация для пользователя</h3>
+        <p>После успешного создания тренировочного занятия в системе вы получите возможность добавить в него перечень выполненных упражнений с указанием количества подходов, повторений и используемых весов.</p>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <form method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="date" class="required">Дата проведения тренировочного занятия</label>
+                    <input type="date"
+                           id="date"
+                           name="date"
+                           value="{% if workout %}{{ workout.date.isoformat() }}{% else %}{{ today }}{% endif %}"
+                           required>
+                    <span class="form-hint">Укажите календарную дату когда проходило тренировочное занятие</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="workout_type" class="required">Тип тренировочного занятия</label>
+                    <select id="workout_type" name="workout_type" required>
+                        <option value="">Выберите тип занятия из списка</option>
+                        {% for type in workout_types %}
+                        <option value="{{ type }}"
+                                {% if workout and workout.workout_type == type %}selected{% endif %}>
+                            {{ type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span class="form-hint">Основной тип тренировочного занятия</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="duration">Общая длительность занятия (минуты)</label>
+                <input type="number"
+                       id="duration"
+                       name="duration"
+                       min="1"
+                       max="999"
+                       value="{% if workout and workout.duration %}{{ workout.duration }}{% endif %}">
+                <span class="form-hint">Общая продолжительность тренировочного занятия в минутах</span>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Заметки о проведённом тренировочном занятии</label>
+                <textarea id="notes"
+                          name="notes"
+                          placeholder="Добавьте заметки о самочувствии, особенностях проведённого тренировочного занятия или других важных моментах которые необходимо зафиксировать...">{% if workout %}{{ workout.notes }}{% endif %}</textarea>
+                <span class="form-hint">Дополнительная информация которую вы желаете сохранить в системе</span>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% if workout %}{{ url_for('workouts.view', id=workout.id) }}{% else %}{{ url_for('workouts.list') }}{% endif %}"
+                   class="btn btn-secondary">
+                    Отменить операцию
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% if workout %}Сохранить внесённые изменения{% else %}Создать тренировочное занятие{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if workout %}
+    <div class="info-box">
+        <h3>Информация для пользователя</h3>
+        <p>Процесс добавления упражнений осуществляется на странице просмотра тренировочного занятия после его успешного создания или редактирования в системе.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
