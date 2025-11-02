@@ -1,20 +1,24 @@
 """
-Модуль отчётов с CSV экспортом
-Содержит логику генерации отчётов по тренировкам и экспорт данных в CSV формат
+Модуль отчётов с экспортом в CSV формат
+Данный модуль предоставляет обширный функционал для формирования различных отчётов
+по тренировочной деятельности пользователей системы с возможностью экспорта данных
+в формат CSV для последующей обработки и анализа в офисных приложениях
 
 ОТЧЁТ 1: "Объём тренировок за период"
-Формула расчёта для каждой тренировки:
-- Общее количество подходов = Σ(sets) всех упражнений в тренировке
-- Общий вес = Σ(sets × reps × weight) всех упражнений
-- Общее время = duration тренировки
-CSV схема: Дата | Тип тренировки | Подходы | Повторы | Вес (кг) | Время (мин)
+Данный отчёт позволяет получить развёрнутую информацию об общем объёме тренировочной нагрузки
+Формулы расчёта агрегированных показателей по типам тренировок:
+- total_workouts = COUNT(workouts) - общее количество тренировок данного типа
+- total_duration = SUM(duration) - суммарная продолжительность всех тренировок в минутах
+- total_exercises = SUM(workout_exercises.sets * reps) - общее количество выполненных упражнений
+- total_weight = SUM(workout_exercises.sets * reps * weight) - суммарный поднятый вес в килограммах
+CSV схема: Тип тренировки | Количество тренировок | Общее время (мин) | Всего упражнений | Общий вес (кг)
 
 ОТЧЁТ 2: "Динамика личных рекордов"
-Формула расчёта для каждого упражнения:
-- Максимальный вес за 1 повтор (1RM) = max(weight) где reps = 1
-- Максимальный объём = max(sets × reps × weight)
-- Прогресс = ((последний_макс - первый_макс) / первый_макс) × 100%
-CSV схема: Упражнение | Первая тренировка | Последняя тренировка | Макс вес (кг) | Прогресс (%)
+Данный отчёт предназначен для отслеживания динамики улучшения показателей по каждому упражнению
+Формулы расчёта максимальных показателей:
+- max_weight = MAX(weight) WHERE exercise_id = X AND date BETWEEN from AND to - максимальный рабочий вес
+- max_reps = MAX(reps) WHERE weight = max_weight - максимальное количество повторений с максимальным весом
+CSV схема: Дата | Упражнение | Макс вес (кг) | Подходы | Повторения
 """
 
 from flask import Blueprint, render_template, request, flash, redirect, url_for, make_response
@@ -45,118 +49,194 @@ def volume():
     """
     ОТЧЁТ 1: Объём тренировок за период
 
-    Формулы расчёта:
-    - Общее количество подходов = Σ(sets) для всех упражнений в тренировке
-    - Общее количество повторов = Σ(reps × sets) для всех упражнений
-    - Общий вес = Σ(sets × reps × weight) для всех упражнений
-    - Общее время = workout.duration (в минутах)
+    Данный отчёт предоставляет детализированную информацию об объёме тренировочной нагрузки
+    с агрегацией данных по типам тренировок для удобства анализа и планирования дальнейших занятий
 
-    Фильтры:
-    - date_from: дата начала периода (по умолчанию: 30 дней назад)
-    - date_to: дата конца периода (по умолчанию: сегодня)
-    - export: формат экспорта ('csv' для экспорта в CSV)
+    Формулы расчёта агрегированных показателей:
+    - total_workouts = COUNT(workouts) - общее количество тренировок данного типа за период
+    - total_duration = SUM(duration) - суммарная продолжительность всех тренировок в минутах
+    - total_exercises = SUM(workout_exercises.sets * reps) - общее количество выполненных упражнений
+    - total_weight = SUM(workout_exercises.sets * reps * weight) - суммарный поднятый вес
 
-    CSV формат:
-    Колонки: Дата, Тип тренировки, Подходы, Повторы, Вес (кг), Время (мин)
-    Кодировка: UTF-8 с BOM для корректного отображения в Excel
+    Параметры фильтрации:
+    - date_from: дата начала периода анализа (по умолчанию: 30 дней назад от текущей даты)
+    - date_to: дата окончания периода анализа (по умолчанию: текущая дата)
+
+    Формат CSV экспорта:
+    Колонки: Тип тренировки, Количество тренировок, Общее время (мин), Всего упражнений, Общий вес (кг)
+    Кодировка: UTF-8 с BOM для корректного отображения кириллицы в Microsoft Excel
+    Разделитель: точка с запятой для совместимости с русской локалью
     """
-    # Получение параметров фильтрации из запроса
+    # Получение параметров фильтрации из HTTP запроса
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
-    export_format = request.args.get('export')
 
-    # Установка значений по умолчанию если параметры не переданы
+    # Установка значений по умолчанию для параметров если они не были переданы пользователем
     if not date_from:
         date_from = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
     if not date_to:
         date_to = datetime.now().strftime('%Y-%m-%d')
 
-    # Парсинг дат для запроса к базе данных
+    # Преобразование строковых представлений дат в объекты date для корректной работы с БД
     try:
         date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
         date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
     except ValueError:
-        flash('Неверный формат даты. Используйте формат ГГГГ-ММ-ДД', 'danger')
+        flash('Произошла ошибка при обработке введённых дат. Пожалуйста, убедитесь что вы используете правильный формат даты ГГГГ-ММ-ДД', 'danger')
         return redirect(url_for('reports.volume'))
 
-    # Запрос тренировок пользователя за указанный период
+    # Выполнение запроса к базе данных для получения всех тренировок пользователя за указанный период
     workouts = Workout.query.filter(
         and_(
             Workout.owner_id == current_user.id,
             Workout.date >= date_from_obj,
             Workout.date <= date_to_obj
         )
-    ).order_by(Workout.date.desc()).all()
+    ).all()
 
-    # Расчёт объёма для каждой тренировки
-    # Формулы применяются к каждому упражнению в тренировке
-    report_data = []
+    # Группировка данных по типам тренировок для формирования агрегированного отчёта
+    # Используем словарь для накопления показателей по каждому типу тренировки
+    workout_types_data = {}
+
+    # Итерация по всем тренировкам для расчёта агрегированных показателей
     for workout in workouts:
-        # Инициализация переменных для расчёта
-        total_sets = 0      # Общее количество подходов
-        total_reps = 0      # Общее количество повторений
-        total_weight = 0.0  # Общий вес (sets × reps × weight)
+        workout_type = workout.workout_type
 
-        # Перебор всех упражнений в тренировке для расчёта показателей
+        # Инициализация структуры данных для нового типа тренировки если он встретился впервые
+        if workout_type not in workout_types_data:
+            workout_types_data[workout_type] = {
+                'workout_type': workout_type,
+                'total_workouts': 0,      # Счётчик количества тренировок
+                'total_duration': 0,      # Суммарная продолжительность
+                'total_exercises': 0,     # Суммарное количество выполненных упражнений
+                'total_weight': 0.0       # Суммарный поднятый вес
+            }
+
+        # Формула 1: COUNT(workouts) - увеличиваем счётчик тренировок данного типа
+        workout_types_data[workout_type]['total_workouts'] += 1
+
+        # Формула 2: SUM(duration) - добавляем продолжительность текущей тренировки к общей сумме
+        if workout.duration:
+            workout_types_data[workout_type]['total_duration'] += workout.duration
+
+        # Обработка всех упражнений в рамках текущей тренировки для расчёта детализированных показателей
         for we in workout.workout_exercises:
-            # Формула 1: Σ(sets) - суммируем количество подходов
-            total_sets += we.sets if we.sets else 0
+            # Формула 3: SUM(sets × reps) - подсчёт общего количества выполненных упражнений
+            sets = we.sets if we.sets else 0
+            reps = we.reps if we.reps else 0
+            workout_types_data[workout_type]['total_exercises'] += sets * reps
 
-            # Формула 2: Σ(sets × reps) - суммируем общее количество повторений
-            total_reps += (we.sets if we.sets else 0) * (we.reps if we.reps else 0)
-
-            # Формула 3: Σ(sets × reps × weight) - суммируем общий поднятый вес
+            # Формула 4: SUM(sets × reps × weight) - подсчёт общего поднятого веса
             if we.weight:
-                total_weight += (we.sets if we.sets else 0) * (we.reps if we.reps else 0) * we.weight
+                workout_types_data[workout_type]['total_weight'] += sets * reps * we.weight
 
-        # Формула 4: duration тренировки (уже в минутах)
-        total_duration = workout.duration if workout.duration else 0
-
-        # Добавление рассчитанных данных в отчёт
+    # Преобразование словаря в список для удобства отображения и сортировки данных
+    report_data = []
+    for data in workout_types_data.values():
         report_data.append({
-            'date': workout.date,
-            'workout_type': workout.workout_type,
-            'sets': total_sets,
-            'reps': total_reps,
-            'weight': round(total_weight, 2),  # Округление до 2 знаков
-            'duration': total_duration
+            'workout_type': data['workout_type'],
+            'total_workouts': data['total_workouts'],
+            'total_duration': data['total_duration'],
+            'total_exercises': data['total_exercises'],
+            'total_weight': round(data['total_weight'], 2)  # Округление до двух знаков после запятой
         })
 
-    # Экспорт в CSV если запрошен
-    if export_format == 'csv':
-        # Создание CSV файла в памяти с кодировкой UTF-8 BOM
-        # BOM (Byte Order Mark) необходим для корректного отображения кириллицы в Excel
-        output = io.StringIO()
-        output.write('\ufeff')  # UTF-8 BOM для Excel
+    # Сортировка отчёта по типу тренировки в алфавитном порядке для удобства восприятия
+    report_data.sort(key=lambda x: x['workout_type'])
 
-        # Создание CSV writer с разделителем точка с запятой (для Excel)
-        writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-
-        # Заголовки CSV согласно схеме отчёта
-        writer.writerow(['Дата', 'Тип тренировки', 'Подходы', 'Повторы', 'Вес (кг)', 'Время (мин)'])
-
-        # Запись данных в CSV
-        for row in report_data:
-            writer.writerow([
-                row['date'].strftime('%d.%m.%Y'),  # Дата в формате ДД.ММ.ГГГГ
-                row['workout_type'],                # Тип тренировки
-                row['sets'],                        # Общее количество подходов
-                row['reps'],                        # Общее количество повторений
-                row['weight'],                      # Общий вес в кг
-                row['duration']                     # Время в минутах
-            ])
-
-        # Формирование HTTP ответа с CSV файлом
-        response = make_response(output.getvalue())
-        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
-        response.headers['Content-Disposition'] = f'attachment; filename=workout_volume_{date_from}_{date_to}.csv'
-        return response
-
-    # Отображение HTML страницы с отчётом
+    # Отображение HTML страницы с результатами отчёта
     return render_template('reports/volume.html',
                          report_data=report_data,
                          date_from=date_from,
                          date_to=date_to)
+
+
+@reports_bp.route('/volume/export', methods=['GET'])
+@login_required
+def volume_export():
+    """
+    Экспорт отчёта "Объём тренировок за период" в формат CSV
+
+    Данная функция осуществляет формирование и выгрузку отчёта в формате CSV
+    с использованием специальных настроек кодировки и форматирования для обеспечения
+    корректного открытия файла в приложении Microsoft Excel
+    """
+    # Получение параметров фильтрации из HTTP запроса
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+
+    # Установка значений по умолчанию для параметров если они не были переданы
+    if not date_from:
+        date_from = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    if not date_to:
+        date_to = datetime.now().strftime('%Y-%m-%d')
+
+    # Преобразование строковых представлений дат в объекты date
+    try:
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Произошла ошибка при обработке дат для экспорта', 'danger')
+        return redirect(url_for('reports.volume'))
+
+    # Получение данных тренировок (аналогично основной функции)
+    workouts = Workout.query.filter(
+        and_(
+            Workout.owner_id == current_user.id,
+            Workout.date >= date_from_obj,
+            Workout.date <= date_to_obj
+        )
+    ).all()
+
+    # Группировка по типам тренировок
+    workout_types_data = {}
+    for workout in workouts:
+        workout_type = workout.workout_type
+        if workout_type not in workout_types_data:
+            workout_types_data[workout_type] = {
+                'total_workouts': 0,
+                'total_duration': 0,
+                'total_exercises': 0,
+                'total_weight': 0.0
+            }
+
+        workout_types_data[workout_type]['total_workouts'] += 1
+        if workout.duration:
+            workout_types_data[workout_type]['total_duration'] += workout.duration
+
+        for we in workout.workout_exercises:
+            sets = we.sets if we.sets else 0
+            reps = we.reps if we.reps else 0
+            workout_types_data[workout_type]['total_exercises'] += sets * reps
+            if we.weight:
+                workout_types_data[workout_type]['total_weight'] += sets * reps * we.weight
+
+    # Создание CSV файла в памяти с использованием кодировки UTF-8 с BOM
+    # BOM (Byte Order Mark) необходим для того чтобы Microsoft Excel правильно определил кодировку файла
+    output = io.StringIO()
+    output.write('\ufeff')  # Добавление UTF-8 BOM в начало файла
+
+    # Инициализация CSV writer с разделителем "точка с запятой" для русской локали Excel
+    writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+
+    # Запись заголовков колонок согласно схеме отчёта
+    writer.writerow(['Тип тренировки', 'Количество тренировок', 'Общее время (мин)', 'Всего упражнений', 'Общий вес (кг)'])
+
+    # Запись строк данных в CSV файл
+    for workout_type, data in sorted(workout_types_data.items()):
+        writer.writerow([
+            workout_type,                           # Тип тренировки
+            data['total_workouts'],                 # Количество тренировок данного типа
+            data['total_duration'],                 # Общая продолжительность в минутах
+            data['total_exercises'],                # Общее количество упражнений
+            round(data['total_weight'], 2)          # Общий вес с округлением
+        ])
+
+    # Формирование HTTP ответа с корректными заголовками для скачивания файла
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    response.headers['Content-Disposition'] = f'attachment; filename=workout_volume_{date_from}_{date_to}.csv'
+    return response
 
 
 @reports_bp.route('/records', methods=['GET'])
@@ -165,144 +245,108 @@ def records():
     """
     ОТЧЁТ 2: Динамика личных рекордов
 
-    Формулы расчёта для каждого упражнения:
-    - Максимальный вес за 1 повтор (1RM) = max(weight)
-    - Максимальный объём = max(sets × reps × weight)
-    - Прогресс = ((текущий_макс - первый_макс) / первый_макс) × 100%
+    Данный отчёт предназначен для детального отслеживания максимальных достижений пользователя
+    по каждому выполняемому упражнению с возможностью анализа прогресса за выбранный период времени
 
-    Фильтры:
-    - exercise_id: ID упражнения для фильтрации (опционально)
-    - export: формат экспорта ('csv' для экспорта в CSV)
+    Формулы расчёта максимальных показателей для каждого упражнения:
+    - max_weight = MAX(weight) WHERE exercise_id = X AND date BETWEEN from AND to - максимальный рабочий вес
+    - max_reps = MAX(reps) WHERE weight = max_weight - максимальное количество повторений с максимальным весом
 
-    CSV формат:
-    Колонки: Упражнение, Первая тренировка, Последняя тренировка, Макс вес (кг), Прогресс (%)
-    Кодировка: UTF-8 с BOM для корректного отображения в Excel
+    Параметры фильтрации:
+    - date_from: дата начала периода анализа (опционально, по умолчанию: 30 дней назад)
+    - date_to: дата окончания периода анализа (опционально, по умолчанию: текущая дата)
+    - exercise_id: идентификатор упражнения для отображения данных только по одному упражнению (опционально)
+
+    Формат CSV экспорта:
+    Колонки: Дата, Упражнение, Макс вес (кг), Подходы, Повторения
+    Кодировка: UTF-8 с BOM для корректного отображения в Microsoft Excel
+    Разделитель: точка с запятой для совместимости с русской локалью
     """
-    # Получение параметров фильтрации
+    # Получение параметров фильтрации из HTTP запроса
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
     exercise_id = request.args.get('exercise_id', type=int)
-    export_format = request.args.get('export')
 
-    # Базовый запрос: все упражнения пользователя из тренировок
-    query = db.session.query(
-        Exercise.id,
-        Exercise.name,
-        func.min(Workout.date).label('first_workout'),    # Дата первой тренировки
-        func.max(Workout.date).label('last_workout')      # Дата последней тренировки
-    ).join(
-        WorkoutExercise, Exercise.id == WorkoutExercise.exercise_id
-    ).join(
+    # Установка значений по умолчанию для параметров дат если они не были переданы пользователем
+    if not date_from:
+        date_from = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    if not date_to:
+        date_to = datetime.now().strftime('%Y-%m-%d')
+
+    # Преобразование строковых представлений дат в объекты date для корректной работы с базой данных
+    try:
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Произошла ошибка при обработке введённых дат. Пожалуйста, убедитесь что вы используете правильный формат даты ГГГГ-ММ-ДД', 'danger')
+        return redirect(url_for('reports.records'))
+
+    # Построение базового SQL запроса для получения данных о личных рекордах по упражнениям
+    # Применяем фильтрацию по датам для получения рекордов только за указанный период
+    base_query = db.session.query(WorkoutExercise, Workout, Exercise).join(
         Workout, WorkoutExercise.workout_id == Workout.id
+    ).join(
+        Exercise, WorkoutExercise.exercise_id == Exercise.id
     ).filter(
-        Workout.owner_id == current_user.id
+        and_(
+            Workout.owner_id == current_user.id,
+            Workout.date >= date_from_obj,
+            Workout.date <= date_to_obj
+        )
     )
 
-    # Применение фильтра по упражнению если указан
+    # Применение дополнительного фильтра по упражнению если он был указан пользователем
     if exercise_id:
-        query = query.filter(Exercise.id == exercise_id)
+        base_query = base_query.filter(Exercise.id == exercise_id)
 
-    # Группировка по упражнениям
-    query = query.group_by(Exercise.id, Exercise.name)
-    exercises_data = query.all()
+    # Выполнение запроса и получение всех записей тренировок с упражнениями
+    workout_exercises_data = base_query.all()
 
-    # Расчёт личных рекордов для каждого упражнения
+    # Группировка данных по упражнениям для подсчёта максимальных показателей
+    # Используем словарь где ключ - это ID упражнения, значение - список всех выполнений
+    exercises_records = {}
+    for we, workout, exercise in workout_exercises_data:
+        if exercise.id not in exercises_records:
+            exercises_records[exercise.id] = {
+                'exercise_name': exercise.name,
+                'records': []  # Список всех выполнений упражнения
+            }
+
+        # Добавляем информацию о выполнении упражнения в список записей
+        exercises_records[exercise.id]['records'].append({
+            'date': workout.date,
+            'weight': we.weight if we.weight else 0,
+            'sets': we.sets if we.sets else 0,
+            'reps': we.reps if we.reps else 0
+        })
+
+    # Формирование итогового отчёта с личными рекордами
     report_data = []
-    for ex_id, ex_name, first_date, last_date in exercises_data:
-        # Получение всех записей упражнения для расчёта максимумов
-        workout_exercises = db.session.query(WorkoutExercise).join(
-            Workout, WorkoutExercise.workout_id == Workout.id
-        ).filter(
-            and_(
-                WorkoutExercise.exercise_id == ex_id,
-                Workout.owner_id == current_user.id
-            )
-        ).order_by(Workout.date).all()
-
-        if not workout_exercises:
+    for exercise_id, data in exercises_records.items():
+        if not data['records']:
             continue
 
-        # Формула 1: Максимальный вес за 1 повтор (1RM)
-        # 1RM = max(weight) среди всех подходов упражнения
-        max_weight = max(
-            (we.weight if we.weight else 0 for we in workout_exercises),
-            default=0
-        )
+        # Формула 1: MAX(weight) - поиск максимального веса среди всех выполнений упражнения
+        max_weight_record = max(data['records'], key=lambda x: x['weight'])
 
-        # Формула 2: Максимальный объём = max(sets × reps × weight)
-        # Находим максимальный объём среди всех выполнений упражнения
-        max_volume = max(
-            ((we.sets if we.sets else 0) * (we.reps if we.reps else 0) * (we.weight if we.weight else 0)
-             for we in workout_exercises),
-            default=0
-        )
-
-        # Формула 3: Расчёт прогресса
-        # Прогресс = ((последний_макс - первый_макс) / первый_макс) × 100%
-        # Сравниваем максимальные веса в первой и последней тренировках
-
-        # Получение первой тренировки с данным упражнением
-        first_workout_exercises = [we for we in workout_exercises
-                                  if db.session.query(Workout).get(we.workout_id).date == first_date]
-        first_max_weight = max(
-            (we.weight if we.weight else 0 for we in first_workout_exercises),
-            default=0
-        ) if first_workout_exercises else 0
-
-        # Получение последней тренировки с данным упражнением
-        last_workout_exercises = [we for we in workout_exercises
-                                 if db.session.query(Workout).get(we.workout_id).date == last_date]
-        last_max_weight = max(
-            (we.weight if we.weight else 0 for we in last_workout_exercises),
-            default=0
-        ) if last_workout_exercises else 0
-
-        # Расчёт процента прогресса
-        # Если первый вес = 0, прогресс не может быть рассчитан
-        if first_max_weight > 0:
-            progress = ((last_max_weight - first_max_weight) / first_max_weight) * 100
-        else:
-            progress = 0
+        # Формула 2: MAX(reps) WHERE weight = max_weight - поиск максимального количества повторений при максимальном весе
+        max_weight = max_weight_record['weight']
+        records_with_max_weight = [r for r in data['records'] if r['weight'] == max_weight]
+        max_reps_record = max(records_with_max_weight, key=lambda x: x['reps']) if records_with_max_weight else max_weight_record
 
         # Добавление рассчитанных данных в отчёт
         report_data.append({
-            'exercise_id': ex_id,
-            'exercise_name': ex_name,
-            'first_workout': first_date,
-            'last_workout': last_date,
-            'max_weight': round(max_weight, 2),      # Максимальный вес
-            'max_volume': round(max_volume, 2),      # Максимальный объём
-            'progress': round(progress, 2)            # Прогресс в процентах
+            'exercise_name': data['exercise_name'],
+            'date': max_reps_record['date'],
+            'max_weight': round(max_weight, 2),
+            'sets': max_reps_record['sets'],
+            'reps': max_reps_record['reps']
         })
 
-    # Экспорт в CSV если запрошен
-    if export_format == 'csv':
-        # Создание CSV файла в памяти с кодировкой UTF-8 BOM
-        output = io.StringIO()
-        output.write('\ufeff')  # UTF-8 BOM для Excel
+    # Сортировка отчёта по дате в обратном порядке (новые записи первыми)
+    report_data.sort(key=lambda x: x['date'], reverse=True)
 
-        # Создание CSV writer с разделителем точка с запятой
-        writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-
-        # Заголовки CSV согласно схеме отчёта
-        writer.writerow(['Упражнение', 'Первая тренировка', 'Последняя тренировка',
-                        'Макс вес (кг)', 'Макс объём (кг)', 'Прогресс (%)'])
-
-        # Запись данных в CSV
-        for row in report_data:
-            writer.writerow([
-                row['exercise_name'],                               # Название упражнения
-                row['first_workout'].strftime('%d.%m.%Y'),         # Первая тренировка
-                row['last_workout'].strftime('%d.%m.%Y'),          # Последняя тренировка
-                row['max_weight'],                                  # Максимальный вес
-                row['progress']                                     # Прогресс в процентах
-            ])
-
-        # Формирование HTTP ответа с CSV файлом
-        response = make_response(output.getvalue())
-        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
-        response.headers['Content-Disposition'] = f'attachment; filename=personal_records_{datetime.now().strftime("%Y%m%d")}.csv'
-        return response
-
-    # Получение списка всех упражнений пользователя для фильтра
+    # Получение списка всех упражнений пользователя для выпадающего списка фильтров
     all_exercises = db.session.query(Exercise).join(
         WorkoutExercise, Exercise.id == WorkoutExercise.exercise_id
     ).join(
@@ -311,8 +355,122 @@ def records():
         Workout.owner_id == current_user.id
     ).distinct().order_by(Exercise.name).all()
 
-    # Отображение HTML страницы с отчётом
+    # Отображение HTML страницы с результатами отчёта
     return render_template('reports/records.html',
                          report_data=report_data,
                          all_exercises=all_exercises,
-                         selected_exercise_id=exercise_id)
+                         selected_exercise_id=exercise_id,
+                         date_from=date_from,
+                         date_to=date_to)
+
+
+@reports_bp.route('/records/export', methods=['GET'])
+@login_required
+def records_export():
+    """
+    Экспорт отчёта "Динамика личных рекордов" в формат CSV
+
+    Данная функция осуществляет формирование и выгрузку отчёта о личных рекордах в формате CSV
+    с использованием специальных настроек кодировки и форматирования для обеспечения
+    корректного открытия файла в приложении Microsoft Excel
+    """
+    # Получение параметров фильтрации из HTTP запроса
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    exercise_id = request.args.get('exercise_id', type=int)
+
+    # Установка значений по умолчанию для параметров если они не были переданы
+    if not date_from:
+        date_from = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    if not date_to:
+        date_to = datetime.now().strftime('%Y-%m-%d')
+
+    # Преобразование строковых представлений дат в объекты date
+    try:
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Произошла ошибка при обработке дат для экспорта', 'danger')
+        return redirect(url_for('reports.records'))
+
+    # Получение данных (аналогично основной функции)
+    base_query = db.session.query(WorkoutExercise, Workout, Exercise).join(
+        Workout, WorkoutExercise.workout_id == Workout.id
+    ).join(
+        Exercise, WorkoutExercise.exercise_id == Exercise.id
+    ).filter(
+        and_(
+            Workout.owner_id == current_user.id,
+            Workout.date >= date_from_obj,
+            Workout.date <= date_to_obj
+        )
+    )
+
+    if exercise_id:
+        base_query = base_query.filter(Exercise.id == exercise_id)
+
+    workout_exercises_data = base_query.all()
+
+    # Группировка и расчёт рекордов
+    exercises_records = {}
+    for we, workout, exercise in workout_exercises_data:
+        if exercise.id not in exercises_records:
+            exercises_records[exercise.id] = {
+                'exercise_name': exercise.name,
+                'records': []
+            }
+
+        exercises_records[exercise.id]['records'].append({
+            'date': workout.date,
+            'weight': we.weight if we.weight else 0,
+            'sets': we.sets if we.sets else 0,
+            'reps': we.reps if we.reps else 0
+        })
+
+    # Формирование данных отчёта
+    report_data = []
+    for exercise_id, data in exercises_records.items():
+        if not data['records']:
+            continue
+
+        max_weight_record = max(data['records'], key=lambda x: x['weight'])
+        max_weight = max_weight_record['weight']
+        records_with_max_weight = [r for r in data['records'] if r['weight'] == max_weight]
+        max_reps_record = max(records_with_max_weight, key=lambda x: x['reps']) if records_with_max_weight else max_weight_record
+
+        report_data.append({
+            'exercise_name': data['exercise_name'],
+            'date': max_reps_record['date'],
+            'max_weight': round(max_weight, 2),
+            'sets': max_reps_record['sets'],
+            'reps': max_reps_record['reps']
+        })
+
+    report_data.sort(key=lambda x: x['date'], reverse=True)
+
+    # Создание CSV файла в памяти с использованием кодировки UTF-8 с BOM
+    # BOM (Byte Order Mark) необходим для того чтобы Microsoft Excel правильно определил кодировку файла
+    output = io.StringIO()
+    output.write('\ufeff')  # Добавление UTF-8 BOM в начало файла
+
+    # Инициализация CSV writer с разделителем "точка с запятой" для русской локали Excel
+    writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+
+    # Запись заголовков колонок согласно схеме отчёта
+    writer.writerow(['Дата', 'Упражнение', 'Макс вес (кг)', 'Подходы', 'Повторения'])
+
+    # Запись строк данных в CSV файл
+    for row in report_data:
+        writer.writerow([
+            row['date'].strftime('%d.%m.%Y'),      # Дата в формате ДД.ММ.ГГГГ
+            row['exercise_name'],                   # Название упражнения
+            row['max_weight'],                      # Максимальный вес в килограммах
+            row['sets'],                            # Количество подходов
+            row['reps']                             # Количество повторений
+        ])
+
+    # Формирование HTTP ответа с корректными заголовками для скачивания файла
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    response.headers['Content-Disposition'] = f'attachment; filename=personal_records_{date_from}_{date_to}.csv'
+    return response

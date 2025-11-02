@@ -11,8 +11,22 @@
 <!-- Форма фильтров -->
 <div class="filter-card">
     <h2>Фильтры отчёта</h2>
+    <p style="margin-bottom: 1rem; color: #666; font-size: 0.95rem;">
+        Используйте данную форму для настройки параметров отчёта и получения детализированной информации
+        о личных рекордах за интересующий вас период времени по выбранным упражнениям
+    </p>
     <form method="GET" action="{{ url_for('reports.records') }}" class="filter-form">
         <div class="form-row">
+            <div class="form-group">
+                <label for="date_from">Дата начала периода:</label>
+                <input type="date" id="date_from" name="date_from" value="{{ date_from }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="date_to">Дата окончания периода:</label>
+                <input type="date" id="date_to" name="date_to" value="{{ date_to }}" required>
+            </div>
+
             <div class="form-group">
                 <label for="exercise_id">Упражнение (опционально):</label>
                 <select id="exercise_id" name="exercise_id">
@@ -36,11 +50,14 @@
 
 <!-- Формулы расчёта -->
 <div class="formulas-card">
-    <h3>📐 Формулы расчёта</h3>
+    <h3>📐 Формулы расчёта максимальных показателей</h3>
+    <p style="margin-bottom: 1rem; color: #666; font-size: 0.95rem;">
+        Для каждого упражнения система производит автоматический поиск максимальных значений весовых
+        нагрузок и количества повторений среди всех зарегистрированных тренировок за выбранный период
+    </p>
     <ul class="formulas-list">
-        <li><strong>Максимальный вес (1RM):</strong> max(weight) - наибольший вес среди всех подходов</li>
-        <li><strong>Максимальный объём:</strong> max(sets × reps × weight) - наибольший объём за одну тренировку</li>
-        <li><strong>Прогресс:</strong> ((последний_макс - первый_макс) / первый_макс) × 100% - процент улучшения</li>
+        <li><strong>max_weight = MAX(weight) WHERE exercise_id = X AND date BETWEEN from AND to</strong> - поиск максимального рабочего веса для упражнения за период</li>
+        <li><strong>max_reps = MAX(reps) WHERE weight = max_weight</strong> - определение максимального количества повторений при максимальном весе</li>
     </ul>
 </div>
 
@@ -50,7 +67,7 @@
     <div class="results-header">
         <h2>Результаты отчёта</h2>
         <div class="export-buttons">
-            <a href="{{ url_for('reports.records', exercise_id=selected_exercise_id, export='csv') }}"
+            <a href="{{ url_for('reports.records_export', date_from=date_from, date_to=date_to, exercise_id=selected_exercise_id) }}"
                class="btn btn-export">
                 📥 Экспорт в CSV
             </a>
@@ -62,28 +79,21 @@
         <table class="report-table">
             <thead>
                 <tr>
+                    <th>Дата</th>
                     <th>Упражнение</th>
-                    <th>Первая тренировка</th>
-                    <th>Последняя тренировка</th>
                     <th>Макс вес (кг)</th>
-                    <th>Макс объём (кг)</th>
-                    <th>Прогресс (%)</th>
+                    <th>Подходы</th>
+                    <th>Повторения</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in report_data %}
                 <tr>
+                    <td>{{ row.date.strftime('%d.%m.%Y') }}</td>
                     <td><strong>{{ row.exercise_name }}</strong></td>
-                    <td>{{ row.first_workout.strftime('%d.%m.%Y') }}</td>
-                    <td>{{ row.last_workout.strftime('%d.%m.%Y') }}</td>
                     <td class="number">{{ row.max_weight }}</td>
-                    <td class="number">{{ row.max_volume }}</td>
-                    <td class="number progress-cell">
-                        <span class="progress-badge {% if row.progress > 0 %}positive{% elif row.progress < 0 %}negative{% else %}neutral{% endif %}">
-                            {% if row.progress > 0 %}↗{% elif row.progress < 0 %}↘{% else %}→{% endif %}
-                            {{ row.progress }}%
-                        </span>
-                    </td>
+                    <td class="number">{{ row.sets }}</td>
+                    <td class="number">{{ row.reps }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -91,33 +101,7 @@
     </div>
 
     <div class="results-summary">
-        <p>Найдено упражнений: <strong>{{ report_data | length }}</strong></p>
-        <p>Средний прогресс: <strong>{{ (report_data | sum(attribute='progress') / report_data | length) | round(2) }}%</strong></p>
-    </div>
-
-    <!-- Статистика прогресса -->
-    <div class="progress-stats">
-        <div class="stat-card positive-card">
-            <div class="stat-icon">↗</div>
-            <div class="stat-content">
-                <div class="stat-value">{{ report_data | selectattr('progress', 'gt', 0) | list | length }}</div>
-                <div class="stat-label">Упражнений с прогрессом</div>
-            </div>
-        </div>
-        <div class="stat-card neutral-card">
-            <div class="stat-icon">→</div>
-            <div class="stat-content">
-                <div class="stat-value">{{ report_data | selectattr('progress', 'eq', 0) | list | length }}</div>
-                <div class="stat-label">Без изменений</div>
-            </div>
-        </div>
-        <div class="stat-card negative-card">
-            <div class="stat-icon">↘</div>
-            <div class="stat-content">
-                <div class="stat-value">{{ report_data | selectattr('progress', 'lt', 0) | list | length }}</div>
-                <div class="stat-label">Упражнений с регрессом</div>
-            </div>
-        </div>
+        <p>Всего записей о личных рекордах: <strong>{{ report_data | length }}</strong></p>
     </div>
 </div>
 {% else %}
