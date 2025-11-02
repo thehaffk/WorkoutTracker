@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр упражнения - {{ exercise.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>{{ exercise.name }}</h2>
+        <hr>
+    </div>
+</div>
+
+<!-- Основная информация об упражнении -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header" style="background-color: #9a9a9a;">
+                <h5 class="mb-0">Информация об упражнении</h5>
+            </div>
+            <div class="card-body" style="background-color: #c0c0c0;">
+                <p><strong>Название:</strong> {{ exercise.name }}</p>
+                <p><strong>Группа мышц:</strong> {{ exercise.muscle_group }}</p>
+
+                {% if exercise.equipment %}
+                <p><strong>Оборудование:</strong> {{ exercise.equipment }}</p>
+                {% endif %}
+
+                {% if exercise.difficulty %}
+                <p><strong>Уровень сложности:</strong> {{ exercise.difficulty }}</p>
+                {% endif %}
+
+                {% if exercise.description %}
+                <p><strong>Описание:</strong></p>
+                <p>{{ exercise.description }}</p>
+                {% endif %}
+
+                <p><strong>Тип:</strong> {% if exercise.is_public %}Публичное{% else %}Личное{% endif %}</p>
+
+                {% if exercise.owner %}
+                <p><strong>Создатель:</strong> {{ exercise.owner.username }}</p>
+                {% endif %}
+
+                <p><strong>Дата создания:</strong> {{ exercise.created_at.strftime('%d.%m.%Y %H:%M') if exercise.created_at else 'Не указана' }}</p>
+            </div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="mt-3">
+            {% if current_user.is_authenticated and (exercise.owner_id == current_user.id or current_user.is_admin()) %}
+            <a href="{{ url_for('exercises.edit_exercise', exercise_id=exercise.id) }}" class="btn btn-primary">Редактировать</a>
+            <form action="{{ url_for('exercises.delete_exercise', exercise_id=exercise.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены что хотите удалить это упражнение?');">
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('exercises.exercises_list') }}" class="btn btn-secondary">Назад к списку</a>
+        </div>
+    </div>
+
+    <!-- Блок загрузки файлов -->
+    <div class="col-md-4">
+        {% if current_user.is_authenticated and (exercise.owner_id == current_user.id or current_user.is_admin()) %}
+        <div class="card mb-3">
+            <div class="card-header" style="background-color: #9a9a9a;">
+                <h5 class="mb-0">Загрузка файлов</h5>
+            </div>
+            <div class="card-body" style="background-color: #c0c0c0;">
+                <form action="{{ url_for('files.upload_file', exercise_id=exercise.id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Выберите файл</label>
+                        <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">
+                            Разрешённые типы: PNG, JPG, JPEG, PDF, TXT, CSV, JSON<br>
+                            Максимальный размер: 20 МБ<br>
+                            Суммарный лимит: 100 МБ на упражнение
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Загрузить файл</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Информация о размере файлов -->
+        {% if attachments %}
+        <div class="card">
+            <div class="card-header" style="background-color: #9a9a9a;">
+                <h6 class="mb-0">Использование пространства</h6>
+            </div>
+            <div class="card-body" style="background-color: #c0c0c0;">
+                <p class="mb-0">
+                    Использовано: {{ "%.2f"|format(total_size / 1024 / 1024) }} МБ из 100 МБ
+                </p>
+                <div class="progress mt-2">
+                    <div class="progress-bar" role="progressbar"
+                         style="width: {{ (total_size / (100 * 1024 * 1024) * 100)|int }}%"
+                         aria-valuenow="{{ (total_size / (100 * 1024 * 1024) * 100)|int }}"
+                         aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Список прикреплённых файлов -->
+{% if attachments %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <h4>Прикреплённые файлы ({{ attachments|length }})</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Имя файла</th>
+                        <th>Размер</th>
+                        <th>Тип</th>
+                        <th>Дата загрузки</th>
+                        <th>Загрузил</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attachment in attachments %}
+                    <tr>
+                        <td>{{ attachment.original_filename }}</td>
+                        <td>{{ "%.2f"|format(attachment.file_size / 1024) }} КБ</td>
+                        <td>{{ attachment.mime_type or 'Неизвестно' }}</td>
+                        <td>{{ attachment.created_at.strftime('%d.%m.%Y %H:%M') if attachment.created_at else 'Не указана' }}</td>
+                        <td>{{ attachment.owner.username if attachment.owner else 'Неизвестен' }}</td>
+                        <td>
+                            <a href="{{ url_for('static', filename='uploads/' + attachment.filename) }}"
+                               class="btn btn-sm btn-info"
+                               download="{{ attachment.original_filename }}"
+                               target="_blank">
+                                Скачать
+                            </a>
+                            {% if current_user.is_authenticated and (attachment.owner_id == current_user.id or current_user.is_admin()) %}
+                            <form action="{{ url_for('files.delete_file', attachment_id=attachment.id) }}"
+                                  method="POST"
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Вы уверены что хотите удалить файл {{ attachment.original_filename }}?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            К этому упражнению пока не прикреплены файлы
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

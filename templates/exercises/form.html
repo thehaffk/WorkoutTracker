@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}{% if exercise %}Редактирование упражнения{% else %}Создание упражнения{% endif %} - Система управления тренировками{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-header {
+        background-color: #cccccc;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #aaaaaa;
+    }
+
+    .form-header h1 {
+        color: #555555;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        font-weight: normal;
+    }
+
+    .form-header p {
+        color: #777777;
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .exercise-form-container {
+        background-color: #d9d9d9;
+        padding: 1.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #bbb;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: normal;
+        color: #666666;
+        font-size: 0.95rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid #aaaaaa;
+        border-radius: 0.25rem;
+        font-size: 0.95rem;
+        background-color: #eeeeee;
+        color: #444444;
+        font-family: inherit;
+    }
+
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #888888;
+        background-color: #e8e8e8;
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.4rem;
+        font-size: 0.85rem;
+        color: #888888;
+        line-height: 1.4;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background-color: #dddddd;
+        padding: 0.9rem;
+        border-radius: 0.25rem;
+        border: 1px solid #bbbbbb;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .checkbox-group label {
+        margin: 0;
+        cursor: pointer;
+        color: #666666;
+        font-size: 0.95rem;
+    }
+
+    .required-fields {
+        background-color: #dddddd;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #bbbbbb;
+    }
+
+    .required-fields p {
+        color: #777777;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.7rem 1.4rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-submit {
+        background-color: #999999;
+        color: #ffffff;
+    }
+
+    .btn-submit:hover {
+        background-color: #888888;
+    }
+
+    .btn-cancel {
+        background-color: #bbbbbb;
+        color: #555555;
+    }
+
+    .btn-cancel:hover {
+        background-color: #aaaaaa;
+    }
+
+    .form-section {
+        margin-bottom: 1.75rem;
+        padding-bottom: 1.75rem;
+        border-bottom: 1px solid #cccccc;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-section-title {
+        color: #666666;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: normal;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-header">
+    <h1>{% if exercise %}Редактирование упражнения в системе{% else %}Создание нового упражнения в системе{% endif %}</h1>
+    <p>{% if exercise %}В данной форме вы можете внести изменения в параметры упражнения сохранённого в системе. После внесения всех необходимых корректировок следует нажать кнопку сохранения для применения изменений в базе данных.{% else %}В данной форме вы можете добавить новое упражнение в систему с указанием всех необходимых параметров и характеристик. После заполнения всех обязательных полей следует нажать кнопку сохранения для добавления упражнения в базу данных системы.{% endif %}</p>
+</div>
+
+<div class="required-fields">
+    <p>Поля отмеченные звёздочкой являются обязательными для заполнения. Без заполнения данных полей сохранение упражнения в системе будет невозможно. Пожалуйста убедитесь что все обязательные поля содержат корректную информацию перед отправкой формы.</p>
+</div>
+
+<div class="exercise-form-container">
+    <form method="post" action="{% if exercise %}{{ url_for('exercises.edit', id=exercise.id) }}{% else %}{{ url_for('exercises.new') }}{% endif %}">
+
+        <div class="form-section">
+            <h2 class="form-section-title">Основная информация об упражнении</h2>
+
+            <div class="form-group">
+                <label for="name">Название упражнения *</label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       value="{% if exercise %}{{ exercise.name }}{% elif form_data %}{{ form_data.name }}{% endif %}"
+                       required>
+                <small>Введите полное наименование упражнения которое будет отображаться в системе при выборе упражнений для составления программы тренировок.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Подробное описание упражнения</label>
+                <textarea id="description"
+                          name="description">{% if exercise %}{{ exercise.description }}{% elif form_data %}{{ form_data.description }}{% endif %}</textarea>
+                <small>Укажите подробное описание техники выполнения упражнения включая исходное положение движение и важные моменты которые необходимо учитывать при выполнении данного упражнения для достижения максимальной эффективности и безопасности тренировочного процесса.</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">Характеристики и параметры упражнения</h2>
+
+            <div class="form-group">
+                <label for="muscle_group">Группа мышц *</label>
+                <select id="muscle_group" name="muscle_group" required>
+                    <option value="">Выберите группу мышц</option>
+                    <option value="Грудь" {% if (exercise and exercise.muscle_group == 'Грудь') or (form_data and form_data.muscle_group == 'Грудь') %}selected{% endif %}>Грудь</option>
+                    <option value="Спина" {% if (exercise and exercise.muscle_group == 'Спина') or (form_data and form_data.muscle_group == 'Спина') %}selected{% endif %}>Спина</option>
+                    <option value="Ноги" {% if (exercise and exercise.muscle_group == 'Ноги') or (form_data and form_data.muscle_group == 'Ноги') %}selected{% endif %}>Ноги</option>
+                    <option value="Плечи" {% if (exercise and exercise.muscle_group == 'Плечи') or (form_data and form_data.muscle_group == 'Плечи') %}selected{% endif %}>Плечи</option>
+                    <option value="Руки" {% if (exercise and exercise.muscle_group == 'Руки') or (form_data and form_data.muscle_group == 'Руки') %}selected{% endif %}>Руки</option>
+                    <option value="Пресс" {% if (exercise and exercise.muscle_group == 'Пресс') or (form_data and form_data.muscle_group == 'Пресс') %}selected{% endif %}>Пресс</option>
+                    <option value="Кардио" {% if (exercise and exercise.muscle_group == 'Кардио') or (form_data and form_data.muscle_group == 'Кардио') %}selected{% endif %}>Кардио</option>
+                </select>
+                <small>Выберите основную группу мышц которая задействуется при выполнении данного упражнения в наибольшей степени для правильной классификации упражнения в системе.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="equipment">Необходимое оборудование</label>
+                <input type="text"
+                       id="equipment"
+                       name="equipment"
+                       value="{% if exercise %}{{ exercise.equipment }}{% elif form_data %}{{ form_data.equipment }}{% endif %}">
+                <small>Укажите какое оборудование необходимо для выполнения упражнения например штанга гантели тренажёр турник или без оборудования если упражнение выполняется с собственным весом тела.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="difficulty">Уровень сложности *</label>
+                <select id="difficulty" name="difficulty" required>
+                    <option value="">Выберите уровень сложности</option>
+                    <option value="beginner" {% if (exercise and exercise.difficulty == 'beginner') or (form_data and form_data.difficulty == 'beginner') %}selected{% endif %}>Начальный уровень для новичков</option>
+                    <option value="intermediate" {% if (exercise and exercise.difficulty == 'intermediate') or (form_data and form_data.difficulty == 'intermediate') %}selected{% endif %}>Средний уровень для опытных</option>
+                    <option value="advanced" {% if (exercise and exercise.difficulty == 'advanced') or (form_data and form_data.difficulty == 'advanced') %}selected{% endif %}>Продвинутый уровень для профессионалов</option>
+                </select>
+                <small>Выберите уровень сложности упражнения который соответствует необходимому уровню подготовки для безопасного и правильного выполнения данного упражнения в тренировочном процессе.</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">Настройки доступности упражнения</h2>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox"
+                           id="is_public"
+                           name="is_public"
+                           {% if (exercise and exercise.is_public) or (form_data and form_data.is_public == 'on') %}checked{% endif %}>
+                    <label for="is_public">Сделать упражнение публичным и доступным для всех пользователей системы</label>
+                </div>
+                <small>Если данная опция включена упражнение будет доступно для просмотра и использования всем пользователям системы в противном случае упражнение будет доступно только вам для использования в личных тренировках.</small>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-submit">{% if exercise %}Сохранить изменения в упражнении{% else %}Создать новое упражнение{% endif %}</button>
+            <a href="{% if exercise %}{{ url_for('exercises.detail', id=exercise.id) }}{% else %}{{ url_for('exercises.list') }}{% endif %}" class="btn btn-cancel">Отменить и вернуться назад</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

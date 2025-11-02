@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог упражнений - Система управления тренировками{% endblock %}
+
+{% block extra_css %}
+<style>
+    .exercises-header {
+        background-color: #cccccc;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #aaaaaa;
+    }
+
+    .exercises-header h1 {
+        color: #555555;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        font-weight: normal;
+    }
+
+    .exercises-header p {
+        color: #777777;
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .filters-section {
+        background-color: #dddddd;
+        padding: 1.25rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #bbbbbb;
+    }
+
+    .filters-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-weight: normal;
+        color: #666666;
+        font-size: 0.9rem;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #aaaaaa;
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+        background-color: #eeeeee;
+        color: #444444;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-end;
+    }
+
+    .btn-filter {
+        background-color: #999999;
+        color: #ffffff;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-filter:hover {
+        background-color: #888888;
+    }
+
+    .btn-reset {
+        background-color: #bbbbbb;
+        color: #555555;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-reset:hover {
+        background-color: #aaaaaa;
+    }
+
+    .exercises-actions {
+        margin-bottom: 1.5rem;
+        text-align: right;
+    }
+
+    .btn-create {
+        background-color: #888888;
+        color: #ffffff;
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-create:hover {
+        background-color: #777777;
+    }
+
+    .exercises-list {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .exercise-card {
+        background-color: #d9d9d9;
+        padding: 1.25rem;
+        border-radius: 0.25rem;
+        border: 1px solid #bbb;
+        transition: background-color 0.2s;
+    }
+
+    .exercise-card:hover {
+        background-color: #d0d0d0;
+    }
+
+    .exercise-card h3 {
+        color: #555555;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        font-weight: normal;
+    }
+
+    .exercise-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        font-size: 0.85rem;
+        color: #777777;
+    }
+
+    .meta-label {
+        color: #888888;
+        font-weight: normal;
+    }
+
+    .exercise-description {
+        color: #777777;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .exercise-badges {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.2rem;
+        font-size: 0.8rem;
+        background-color: #bbbbbb;
+        color: #555555;
+    }
+
+    .badge-public {
+        background-color: #999999;
+        color: #ffffff;
+    }
+
+    .exercise-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-view {
+        background-color: #aaaaaa;
+        color: #ffffff;
+        padding: 0.4rem 0.9rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-view:hover {
+        background-color: #999999;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 0.5rem 0.9rem;
+        border: 1px solid #aaaaaa;
+        background-color: #cccccc;
+        color: #555555;
+        text-decoration: none;
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .pagination a:hover {
+        background-color: #bbbbbb;
+    }
+
+    .pagination .active {
+        background-color: #999999;
+        color: #ffffff;
+    }
+
+    .no-exercises {
+        background-color: #d9d9d9;
+        padding: 2rem;
+        text-align: center;
+        color: #777777;
+        border-radius: 0.25rem;
+        border: 1px solid #bbb;
+        font-size: 0.95rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="exercises-header">
+    <h1>Каталог упражнений для тренировок</h1>
+    <p>В данном разделе представлен перечень доступных упражнений для составления программ тренировок. Вы можете осуществлять поиск по наименованию упражнения а также применять фильтры по группе мышц и уровню сложности для более удобного подбора необходимых элементов тренировочного процесса.</p>
+</div>
+
+<div class="filters-section">
+    <form method="get" class="filters-form">
+        <div class="filter-group">
+            <label for="search">Поиск по названию упражнения</label>
+            <input type="text" id="search" name="search" value="{{ search }}" placeholder="Введите название для поиска...">
+        </div>
+
+        <div class="filter-group">
+            <label for="muscle_group">Группа мышц для фильтрации</label>
+            <select id="muscle_group" name="muscle_group">
+                <option value="">Все группы мышц</option>
+                {% for mg in muscle_groups %}
+                <option value="{{ mg }}" {% if mg == muscle_group %}selected{% endif %}>{{ mg }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="difficulty">Уровень сложности упражнения</label>
+            <select id="difficulty" name="difficulty">
+                <option value="">Все уровни сложности</option>
+                <option value="beginner" {% if difficulty == 'beginner' %}selected{% endif %}>Начальный уровень</option>
+                <option value="intermediate" {% if difficulty == 'intermediate' %}selected{% endif %}>Средний уровень</option>
+                <option value="advanced" {% if difficulty == 'advanced' %}selected{% endif %}>Продвинутый уровень</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-filter">Применить фильтры</button>
+            <a href="{{ url_for('exercises.list') }}" class="btn-reset">Сбросить все фильтры</a>
+        </div>
+    </form>
+</div>
+
+{% if current_user.role.name in ['editor', 'admin'] %}
+<div class="exercises-actions">
+    <a href="{{ url_for('exercises.new') }}" class="btn-create">Создать новое упражнение</a>
+</div>
+{% endif %}
+
+<div class="exercises-list">
+    {% if exercises %}
+        {% for exercise in exercises %}
+        <div class="exercise-card">
+            <h3>{{ exercise.name }}</h3>
+
+            <div class="exercise-badges">
+                {% if exercise.is_public %}
+                <span class="badge badge-public">Публичное упражнение</span>
+                {% else %}
+                <span class="badge">Личное упражнение</span>
+                {% endif %}
+
+                {% if exercise.difficulty == 'beginner' %}
+                <span class="badge">Начальный уровень</span>
+                {% elif exercise.difficulty == 'intermediate' %}
+                <span class="badge">Средний уровень</span>
+                {% elif exercise.difficulty == 'advanced' %}
+                <span class="badge">Продвинутый уровень</span>
+                {% endif %}
+            </div>
+
+            <div class="exercise-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Группа мышц:</span> {{ exercise.muscle_group }}
+                </div>
+                {% if exercise.equipment %}
+                <div class="meta-item">
+                    <span class="meta-label">Оборудование:</span> {{ exercise.equipment }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if exercise.description %}
+            <div class="exercise-description">
+                {{ exercise.description[:200] }}{% if exercise.description|length > 200 %}...{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="exercise-actions">
+                <a href="{{ url_for('exercises.detail', id=exercise.id) }}" class="btn-view">Просмотреть детали</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-exercises">
+            <p>В настоящий момент по заданным параметрам поиска и фильтрации не обнаружено ни одного упражнения в системе. Попробуйте изменить условия поиска или сбросить примененные фильтры для получения более широкого списка доступных упражнений.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% if pagination.pages > 1 %}
+<div class="pagination">
+    {% if pagination.has_prev %}
+        <a href="{{ url_for('exercises.list', page=pagination.prev_num, search=search, muscle_group=muscle_group, difficulty=difficulty) }}">Предыдущая страница</a>
+    {% endif %}
+
+    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if page_num == pagination.page %}
+                <span class="active">{{ page_num }}</span>
+            {% else %}
+                <a href="{{ url_for('exercises.list', page=page_num, search=search, muscle_group=muscle_group, difficulty=difficulty) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            <span>...</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+        <a href="{{ url_for('exercises.list', page=pagination.next_num, search=search, muscle_group=muscle_group, difficulty=difficulty) }}">Следующая страница</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

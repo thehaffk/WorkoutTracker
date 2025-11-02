@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exercise.name }} - Система управления тренировками{% endblock %}
+
+{% block extra_css %}
+<style>
+    .exercise-detail-header {
+        background-color: #cccccc;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #aaaaaa;
+    }
+
+    .exercise-detail-header h1 {
+        color: #555555;
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+        font-weight: normal;
+    }
+
+    .exercise-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        padding: 0.3rem 0.7rem;
+        border-radius: 0.2rem;
+        font-size: 0.85rem;
+        background-color: #bbbbbb;
+        color: #555555;
+    }
+
+    .badge-public {
+        background-color: #999999;
+        color: #ffffff;
+    }
+
+    .exercise-info {
+        background-color: #d9d9d9;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #bbb;
+    }
+
+    .info-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-label {
+        color: #888888;
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+        font-weight: normal;
+    }
+
+    .info-value {
+        color: #555555;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .exercise-description {
+        background-color: #dddddd;
+        padding: 1.25rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #bbbbbb;
+    }
+
+    .exercise-description h2 {
+        color: #666666;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        font-weight: normal;
+    }
+
+    .exercise-description p {
+        color: #777777;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .exercise-metadata {
+        background-color: #d9d9d9;
+        padding: 1.25rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #bbb;
+    }
+
+    .exercise-metadata h2 {
+        color: #666666;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        font-weight: normal;
+    }
+
+    .metadata-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .metadata-item {
+        background-color: #eeeeee;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #cccccc;
+    }
+
+    .metadata-label {
+        color: #888888;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .metadata-value {
+        color: #555555;
+        font-size: 0.95rem;
+    }
+
+    .exercise-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-back {
+        background-color: #bbbbbb;
+        color: #555555;
+    }
+
+    .btn-back:hover {
+        background-color: #aaaaaa;
+    }
+
+    .btn-edit {
+        background-color: #999999;
+        color: #ffffff;
+    }
+
+    .btn-edit:hover {
+        background-color: #888888;
+    }
+
+    .btn-delete {
+        background-color: #888888;
+        color: #ffffff;
+    }
+
+    .btn-delete:hover {
+        background-color: #777777;
+    }
+
+    .delete-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background-color: #cccccc;
+        padding: 2rem;
+        border-radius: 0.25rem;
+        max-width: 500px;
+        width: 90%;
+        border: 1px solid #aaaaaa;
+    }
+
+    .modal-content h2 {
+        color: #555555;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        font-weight: normal;
+    }
+
+    .modal-content p {
+        color: #777777;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="exercise-detail-header">
+    <h1>{{ exercise.name }}</h1>
+    <div class="exercise-badges">
+        {% if exercise.is_public %}
+        <span class="badge badge-public">Публичное упражнение</span>
+        {% else %}
+        <span class="badge">Личное упражнение</span>
+        {% endif %}
+
+        {% if exercise.difficulty == 'beginner' %}
+        <span class="badge">Начальный уровень сложности</span>
+        {% elif exercise.difficulty == 'intermediate' %}
+        <span class="badge">Средний уровень сложности</span>
+        {% elif exercise.difficulty == 'advanced' %}
+        <span class="badge">Продвинутый уровень сложности</span>
+        {% endif %}
+    </div>
+</div>
+
+{% if exercise.description %}
+<div class="exercise-description">
+    <h2>Описание упражнения</h2>
+    <p>{{ exercise.description }}</p>
+</div>
+{% endif %}
+
+<div class="exercise-metadata">
+    <h2>Характеристики упражнения</h2>
+    <div class="metadata-grid">
+        <div class="metadata-item">
+            <div class="metadata-label">Группа мышц</div>
+            <div class="metadata-value">{{ exercise.muscle_group }}</div>
+        </div>
+
+        {% if exercise.equipment %}
+        <div class="metadata-item">
+            <div class="metadata-label">Требуемое оборудование</div>
+            <div class="metadata-value">{{ exercise.equipment }}</div>
+        </div>
+        {% endif %}
+
+        <div class="metadata-item">
+            <div class="metadata-label">Уровень сложности</div>
+            <div class="metadata-value">
+                {% if exercise.difficulty == 'beginner' %}
+                Начальный уровень
+                {% elif exercise.difficulty == 'intermediate' %}
+                Средний уровень
+                {% elif exercise.difficulty == 'advanced' %}
+                Продвинутый уровень
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="metadata-item">
+            <div class="metadata-label">Дата добавления в систему</div>
+            <div class="metadata-value">{{ exercise.created_at.strftime('%d.%m.%Y') }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="exercise-actions">
+    <a href="{{ url_for('exercises.list') }}" class="btn btn-back">Вернуться к списку упражнений</a>
+
+    {% if current_user.role.name in ['editor', 'admin'] %}
+        {% if exercise.owner_id == current_user.id or current_user.role.name == 'admin' %}
+        <a href="{{ url_for('exercises.edit', id=exercise.id) }}" class="btn btn-edit">Редактировать упражнение</a>
+        {% endif %}
+    {% endif %}
+
+    {% if current_user.role.name == 'admin' %}
+    <button onclick="showDeleteModal()" class="btn btn-delete">Удалить упражнение</button>
+    {% endif %}
+</div>
+
+{% if current_user.role.name == 'admin' %}
+<div id="deleteModal" class="delete-modal">
+    <div class="modal-content">
+        <h2>Подтверждение удаления упражнения</h2>
+        <p>Вы действительно желаете удалить данное упражнение из системы? Данное действие является необратимым и восстановление удалённых данных будет невозможно. Пожалуйста подтвердите удаление упражнения из базы данных системы.</p>
+        <div class="modal-actions">
+            <button onclick="hideDeleteModal()" class="btn btn-back">Отменить действие</button>
+            <form method="post" action="{{ url_for('exercises.delete', id=exercise.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-delete">Подтвердить удаление</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    function showDeleteModal() {
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function hideDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+    }
+
+    // Закрытие модального окна при клике вне его области
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideDeleteModal();
+        }
+    });
+</script>
+{% endblock %}
