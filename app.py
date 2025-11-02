@@ -84,7 +84,50 @@ def dashboard():
     Панель управления пользователя
     Отображает основную статистику и информацию о тренировках пользователя
     """
-    return render_template('dashboard.html')
+    from models import Exercise, Workout
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
+
+    # Подсчёт статистики по упражнениям
+    total_exercises = Exercise.query.filter(
+        (Exercise.is_public == True) | (Exercise.owner_id == current_user.id)
+    ).count()
+
+    # Подсчёт статистики по тренировкам пользователя
+    total_workouts = Workout.query.filter_by(owner_id=current_user.id).count()
+
+    # Тренировки за последний месяц
+    month_ago = datetime.utcnow() - timedelta(days=30)
+    workouts_this_month = Workout.query.filter(
+        Workout.owner_id == current_user.id,
+        Workout.date >= month_ago.date()
+    ).count()
+
+    # Тренировки за последнюю неделю
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    workouts_this_week = Workout.query.filter(
+        Workout.owner_id == current_user.id,
+        Workout.date >= week_ago.date()
+    ).count()
+
+    # Средняя длительность тренировок
+    avg_duration = db.session.query(func.avg(Workout.duration)).filter(
+        Workout.owner_id == current_user.id,
+        Workout.duration != None
+    ).scalar() or 0
+
+    stats = {
+        'total_exercises': total_exercises,
+        'strength_exercises': 0,  # Для простоты
+        'cardio_exercises': 0,
+        'flexibility_exercises': 0,
+        'total_workouts': total_workouts,
+        'workouts_this_month': workouts_this_month,
+        'workouts_this_week': workouts_this_week,
+        'avg_duration': int(avg_duration) if avg_duration else 0
+    }
+
+    return render_template('dashboard.html', stats=stats)
 
 
 @app.route('/login', methods=['GET', 'POST'])
