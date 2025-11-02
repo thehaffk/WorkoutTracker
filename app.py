@@ -10,24 +10,12 @@ from config import Config
 from models import db, User, Role
 import os
 
-# Импорт blueprints
-from routes.workouts import workouts_bp
-from routes.exercises import exercises_bp
-from routes.reports import reports_bp
-from routes.files import files_bp
-
 # Инициализация приложения Flask
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # Инициализация базы данных
 db.init_app(app)
-
-# Регистрация blueprints
-app.register_blueprint(workouts_bp)
-app.register_blueprint(reports_bp)
-app.register_blueprint(exercises_bp)
-app.register_blueprint(files_bp)
 
 # Инициализация Flask-Login для управления сессиями пользователей
 login_manager = LoginManager()
@@ -290,6 +278,17 @@ if __name__ == '__main__':
 
     # Инициализация базы данных
     init_db()
+
+    # Регистрация blueprints после инициализации БД
+    from routes.workouts import workouts_bp
+    from routes.exercises import exercises_bp
+    from routes.reports import reports_bp
+    from routes.files import files_bp
+
+    app.register_blueprint(workouts_bp)
+    app.register_blueprint(reports_bp)
+    app.register_blueprint(exercises_bp)
+    app.register_blueprint(files_bp)
 
     # Запуск приложения
     app.run(host='0.0.0.0', port=8080, debug=True)
