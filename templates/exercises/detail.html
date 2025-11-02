@@ -216,6 +216,140 @@
         gap: 1rem;
         justify-content: flex-end;
     }
+
+    .attachments-section {
+        background-color: #d9d9d9;
+        padding: 1.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #bbb;
+    }
+
+    .attachments-section h2 {
+        color: #666666;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: normal;
+    }
+
+    .upload-form {
+        background-color: #eeeeee;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid #cccccc;
+    }
+
+    .upload-form label {
+        color: #777777;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .upload-form input[type="file"] {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #bbbbbb;
+        border-radius: 0.25rem;
+        background-color: #ffffff;
+        color: #555555;
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .upload-form .btn-upload {
+        background-color: #999999;
+        color: #ffffff;
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .upload-form .btn-upload:hover {
+        background-color: #888888;
+    }
+
+    .upload-form .upload-info {
+        color: #888888;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .files-list {
+        background-color: #eeeeee;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid #cccccc;
+    }
+
+    .files-list-empty {
+        color: #888888;
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .file-item {
+        background-color: #ffffff;
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid #dddddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .file-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .file-info {
+        flex: 1;
+    }
+
+    .file-name {
+        color: #555555;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .file-meta {
+        color: #888888;
+        font-size: 0.85rem;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-delete-file {
+        background-color: #888888;
+        color: #ffffff;
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .btn-delete-file:hover {
+        background-color: #777777;
+    }
+
+    .btn-export {
+        background-color: #999999;
+        color: #ffffff;
+    }
+
+    .btn-export:hover {
+        background-color: #888888;
+    }
 </style>
 {% endblock %}
 
@@ -281,14 +415,66 @@
     </div>
 </div>
 
+<div class="attachments-section">
+    <h2>Прикреплённые файлы к упражнению</h2>
+
+    {% if exercise.is_public or exercise.owner_id == current_user.id or current_user.role.name == 'admin' %}
+    <div class="upload-form">
+        <form method="post" action="{{ url_for('files.upload_file', exercise_id=exercise.id) }}" enctype="multipart/form-data">
+            <label for="file">Выберите файл для загрузки и прикрепления к данному упражнению в системе</label>
+            <input type="file" id="file" name="file" required>
+            <button type="submit" class="btn-upload">Загрузить файл в систему</button>
+            <div class="upload-info">
+                Поддерживаемые форматы файлов для загрузки в систему: PNG, JPG, JPEG, PDF, TXT, CSV, JSON.<br>
+                Максимально допустимый размер одного загружаемого файла составляет 20 МБ.<br>
+                Максимально допустимый суммарный размер всех файлов прикреплённых к упражнению составляет 100 МБ.
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="files-list">
+        {% if exercise.attachments %}
+            {% for attachment in exercise.attachments %}
+            <div class="file-item">
+                <div class="file-info">
+                    <div class="file-name">{{ attachment.original_filename }}</div>
+                    <div class="file-meta">
+                        Размер файла: {{ attachment.file_size|filesize }} |
+                        Загружен пользователем: {{ attachment.owner.username }} |
+                        Дата загрузки в систему: {{ attachment.created_at.strftime('%d.%m.%Y в %H:%M') }}
+                    </div>
+                </div>
+                {% if attachment.owner_id == current_user.id or current_user.role.name == 'admin' %}
+                <div class="file-actions">
+                    <form method="post" action="{{ url_for('files.delete_file', attachment_id=attachment.id) }}" style="display: inline;">
+                        <button type="submit" class="btn-delete-file" onclick="return confirm('Вы действительно желаете удалить данный файл из системы? Это действие является необратимым и восстановление удалённых данных будет невозможно.');">Удалить файл</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="files-list-empty">
+                К данному упражнению пока не прикреплено ни одного файла в системе. Вы можете загрузить файлы используя форму выше.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="exercise-actions">
     <a href="{{ url_for('exercises.list') }}" class="btn btn-back">Вернуться к списку упражнений</a>
 
     {% if current_user.role.name in ['editor', 'admin'] %}
         {% if exercise.owner_id == current_user.id or current_user.role.name == 'admin' %}
         <a href="{{ url_for('exercises.edit', id=exercise.id) }}" class="btn btn-edit">Редактировать упражнение</a>
-        <button onclick="showDeleteModal()" class="btn btn-delete">Удалить упражнение</button>
         {% endif %}
+    {% endif %}
+
+    <a href="{{ url_for('files.export_exercise', exercise_id=exercise.id) }}" class="btn btn-export">Экспортировать упражнение в ZIP архив</a>
+
+    {% if current_user.role.name == 'admin' %}
+    <button onclick="showDeleteModal()" class="btn btn-delete">Удалить упражнение</button>
     {% endif %}
 </div>
 
@@ -311,18 +497,27 @@
 
 <script>
     function showDeleteModal() {
-        document.getElementById('deleteModal').classList.add('active');
+        var modal = document.getElementById('deleteModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
     }
 
     function hideDeleteModal() {
-        document.getElementById('deleteModal').classList.remove('active');
+        var modal = document.getElementById('deleteModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
     }
 
     // Закрытие модального окна при клике вне его области
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            hideDeleteModal();
-        }
-    });
+    var modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDeleteModal();
+            }
+        });
+    }
 </script>
 {% endblock %}
