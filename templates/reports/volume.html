@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+
+{% block title %}Объём тренировок за период - Отчёты{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📈 Объём тренировок за период</h1>
+    <p class="subtitle">Анализ объёма тренировок с расчётом показателей</p>
+</div>
+
+<!-- Форма фильтров -->
+<div class="filter-card">
+    <h2>Фильтры отчёта</h2>
+    <form method="GET" action="{{ url_for('reports.volume') }}" class="filter-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="date_from">Дата начала:</label>
+                <input type="date" id="date_from" name="date_from" value="{{ date_from }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="date_to">Дата окончания:</label>
+                <input type="date" id="date_to" name="date_to" value="{{ date_to }}" required>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Применить фильтры</button>
+            <a href="{{ url_for('reports.volume') }}" class="btn btn-secondary">Сбросить</a>
+        </div>
+    </form>
+</div>
+
+<!-- Формулы расчёта -->
+<div class="formulas-card">
+    <h3>📐 Формулы расчёта</h3>
+    <ul class="formulas-list">
+        <li><strong>Общее количество подходов:</strong> Σ(sets) всех упражнений в тренировке</li>
+        <li><strong>Общее количество повторений:</strong> Σ(sets × reps) всех упражнений</li>
+        <li><strong>Общий вес:</strong> Σ(sets × reps × weight) всех упражнений в тренировке</li>
+        <li><strong>Общее время:</strong> duration тренировки (в минутах)</li>
+    </ul>
+</div>
+
+<!-- Результаты отчёта -->
+{% if report_data %}
+<div class="results-section">
+    <div class="results-header">
+        <h2>Результаты отчёта</h2>
+        <div class="export-buttons">
+            <a href="{{ url_for('reports.volume', date_from=date_from, date_to=date_to, export='csv') }}"
+               class="btn btn-export">
+                📥 Экспорт в CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Таблица результатов -->
+    <div class="table-container">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Тип тренировки</th>
+                    <th>Подходы</th>
+                    <th>Повторы</th>
+                    <th>Вес (кг)</th>
+                    <th>Время (мин)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in report_data %}
+                <tr>
+                    <td>{{ row.date.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ row.workout_type }}</td>
+                    <td class="number">{{ row.sets }}</td>
+                    <td class="number">{{ row.reps }}</td>
+                    <td class="number">{{ row.weight }}</td>
+                    <td class="number">{{ row.duration }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2"><strong>ИТОГО:</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='sets') }}</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='reps') }}</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='weight') | round(2) }}</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='duration') }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="results-summary">
+        <p>Найдено тренировок: <strong>{{ report_data | length }}</strong></p>
+    </div>
+</div>
+{% else %}
+<div class="no-data">
+    <p>📭 За выбранный период тренировок не найдено</p>
+    <p class="hint">Попробуйте изменить диапазон дат или добавить новые тренировки</p>
+</div>
+{% endif %}
+
+<div class="back-link">
+    <a href="{{ url_for('reports.index') }}">← Вернуться к списку отчётов</a>
+</div>
+
+<style>
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+.filter-card, .formulas-card, .results-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-card h2, .formulas-card h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.filter-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+.btn-secondary {
+    background-color: #757575;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #616161;
+}
+
+.btn-export {
+    background-color: #2196F3;
+    color: white;
+}
+
+.btn-export:hover {
+    background-color: #1976D2;
+}
+
+.formulas-list {
+    list-style: none;
+    padding: 0;
+}
+
+.formulas-list li {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f5f5f5;
+    border-left: 4px solid #4CAF50;
+    border-radius: 4px;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.report-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+}
+
+.report-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.report-table td.number {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
+
+.total-row {
+    background-color: #e8f5e9 !important;
+}
+
+.total-row td {
+    border-top: 2px solid #4CAF50;
+    border-bottom: 2px solid #4CAF50;
+}
+
+.results-summary {
+    margin-top: 1rem;
+    text-align: right;
+    color: #666;
+}
+
+.no-data {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.no-data p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.no-data .hint {
+    font-size: 1rem;
+    color: #999;
+}
+
+.back-link {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.back-link a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}

@@ -185,7 +185,7 @@
 </div>
 
 <div class="exercise-form-container">
-    <form method="post" action="{% if exercise %}{{ url_for('exercises.edit', id=exercise.id) }}{% else %}{{ url_for('exercises.new') }}{% endif %}">
+    <form method="post" action="{% if exercise %}{{ url_for('exercises.edit', id=exercise.id) }}{% else %}{{ url_for('exercises.create') }}{% endif %}">
 
         <div class="form-section">
             <h2 class="form-section-title">Основная информация об упражнении</h2>
