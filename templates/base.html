@@ -86,21 +86,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    {% if session.user_id %}
+                    {% if current_user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('dashboard') }}">Главная панель управления</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('exercises_list') }}">Справочник упражнений</a>
+                            <a class="nav-link" href="{{ url_for('workouts.list') }}">Реестр тренировок</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('workouts_list') }}">Реестр тренировок</a>
+                            <a class="nav-link" href="{{ url_for('exercises.list') }}">Каталог упражнений</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('reports') }}">Отчётная документация</a>
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link">Пользователь: {{ session.username }}</span>
+                            <span class="nav-link">Пользователь: {{ current_user.username }} ({{ current_user.role.name }})</span>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('logout') }}">Выход из системы</a>

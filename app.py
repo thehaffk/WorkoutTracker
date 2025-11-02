@@ -10,12 +10,20 @@ from config import Config
 from models import db, User, Role
 import os
 
+# Импорт blueprints
+from routes.workouts import workouts_bp
+from routes.exercises import exercises_bp
+
 # Инициализация приложения Flask
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # Инициализация базы данных
 db.init_app(app)
+
+# Регистрация blueprints
+app.register_blueprint(workouts_bp)
+app.register_blueprint(exercises_bp)
 
 # Инициализация Flask-Login для управления сессиями пользователей
 login_manager = LoginManager()
