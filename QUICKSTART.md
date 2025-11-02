@@ -1,6 +1,34 @@
 # Быстрый старт
 
-## Установка
+## Вариант 1: Docker (рекомендуется)
+
+```bash
+# Клонировать репозиторий
+git clone https://github.com/thehaffk/WorkoutTracker.git
+cd WorkoutTracker
+
+# Собрать и запустить контейнер
+docker-compose up -d
+
+# Загрузить демо-данные
+docker exec workout-tracker-app python seed.py
+
+# Приложение доступно на http://localhost:8888
+```
+
+Остановка:
+```bash
+docker-compose down
+```
+
+Просмотр логов:
+```bash
+docker-compose logs -f
+```
+
+## Вариант 2: Локальный запуск
+
+### Установка
 
 ```bash
 # Клонировать репозиторий
