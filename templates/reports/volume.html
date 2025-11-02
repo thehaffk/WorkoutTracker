@@ -33,12 +33,16 @@
 
 <!-- Формулы расчёта -->
 <div class="formulas-card">
-    <h3>📐 Формулы расчёта</h3>
+    <h3>📐 Формулы расчёта агрегированных показателей</h3>
+    <p style="margin-bottom: 1rem; color: #666; font-size: 0.95rem;">
+        В данном отчёте осуществляется группировка всех тренировок по их типам с последующим вычислением
+        суммарных показателей для каждой категории тренировочной активности
+    </p>
     <ul class="formulas-list">
-        <li><strong>Общее количество подходов:</strong> Σ(sets) всех упражнений в тренировке</li>
-        <li><strong>Общее количество повторений:</strong> Σ(sets × reps) всех упражнений</li>
-        <li><strong>Общий вес:</strong> Σ(sets × reps × weight) всех упражнений в тренировке</li>
-        <li><strong>Общее время:</strong> duration тренировки (в минутах)</li>
+        <li><strong>total_workouts = COUNT(workouts)</strong> - общее количество тренировок данного типа за выбранный период времени</li>
+        <li><strong>total_duration = SUM(duration)</strong> - суммарная продолжительность всех тренировок данного типа в минутах</li>
+        <li><strong>total_exercises = SUM(workout_exercises.sets * reps)</strong> - общее количество выполненных упражнений</li>
+        <li><strong>total_weight = SUM(workout_exercises.sets * reps * weight)</strong> - суммарный поднятый вес в килограммах</li>
     </ul>
 </div>
 
@@ -48,7 +52,7 @@
     <div class="results-header">
         <h2>Результаты отчёта</h2>
         <div class="export-buttons">
-            <a href="{{ url_for('reports.volume', date_from=date_from, date_to=date_to, export='csv') }}"
+            <a href="{{ url_for('reports.volume_export', date_from=date_from, date_to=date_to) }}"
                class="btn btn-export">
                 📥 Экспорт в CSV
             </a>
@@ -60,33 +64,31 @@
         <table class="report-table">
             <thead>
                 <tr>
-                    <th>Дата</th>
                     <th>Тип тренировки</th>
-                    <th>Подходы</th>
-                    <th>Повторы</th>
-                    <th>Вес (кг)</th>
-                    <th>Время (мин)</th>
+                    <th>Количество тренировок</th>
+                    <th>Общее время (мин)</th>
+                    <th>Всего упражнений</th>
+                    <th>Общий вес (кг)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in report_data %}
                 <tr>
-                    <td>{{ row.date.strftime('%d.%m.%Y') }}</td>
-                    <td>{{ row.workout_type }}</td>
-                    <td class="number">{{ row.sets }}</td>
-                    <td class="number">{{ row.reps }}</td>
-                    <td class="number">{{ row.weight }}</td>
-                    <td class="number">{{ row.duration }}</td>
+                    <td><strong>{{ row.workout_type }}</strong></td>
+                    <td class="number">{{ row.total_workouts }}</td>
+                    <td class="number">{{ row.total_duration }}</td>
+                    <td class="number">{{ row.total_exercises }}</td>
+                    <td class="number">{{ row.total_weight }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="2"><strong>ИТОГО:</strong></td>
-                    <td class="number"><strong>{{ report_data | sum(attribute='sets') }}</strong></td>
-                    <td class="number"><strong>{{ report_data | sum(attribute='reps') }}</strong></td>
-                    <td class="number"><strong>{{ report_data | sum(attribute='weight') | round(2) }}</strong></td>
-                    <td class="number"><strong>{{ report_data | sum(attribute='duration') }}</strong></td>
+                    <td><strong>ИТОГО:</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='total_workouts') }}</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='total_duration') }}</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='total_exercises') }}</strong></td>
+                    <td class="number"><strong>{{ report_data | sum(attribute='total_weight') | round(2) }}</strong></td>
                 </tr>
             </tfoot>
         </table>
