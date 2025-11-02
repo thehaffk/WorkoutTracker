@@ -1,163 +1,163 @@
 {% extends "base.html" %}
 
-{% block title %}Каптёрка - ШПИЦ-ЗОНА{% endblock %}
+{% block title %}Главная - WorkoutTracker{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 style="text-align: center; margin-bottom: 30px;">
-            ⛓️ КАПТЁРКА ЗАКЛЮЧЁННОГО ⛓️
-        </h1>
+        <div class="page-header">
+            <h1>Добро пожаловать, {{ session.username }}!</h1>
+        </div>
 
-        <div style="background: linear-gradient(135deg, #ff6600 0%, #cc5200 100%); padding: 20px; border: 4px groove #666; margin-bottom: 25px; color: #000;">
-            <h3 style="margin-bottom: 15px; color: #000; text-shadow: 1px 1px 2px rgba(255,255,255,0.3);">
-                🐕 ПРИКАЗ НАЧАЛЬНИКА ЗОНЫ
-            </h3>
-            <p style="text-align: justify; font-size: 1rem; line-height: 1.6; font-family: Arial, sans-serif; font-weight: bold;">
-                Заключённый <strong style="text-decoration: underline;">{{ session.username }}</strong>!
-                Добро пожаловать в исправительную качалку строгого режима "ШПИЦ-ЗОНА".
-                Согласно приказу администрации, тебе назначено обязательное выполнение нормативов физической подготовки
-                для поддержания боевого духа и дисциплины. В твоём распоряжении: журнал отработок для учёта тренировок,
-                каталог нормативов зоны для выбора упражнений и система докладных для отчёта начальству.
-                Помни: регулярные отработки - твой путь к досрочному освобождению УДО!
-                <strong>Работай, качайся, не вздумай халтурить!</strong>
+        <div class="info-box">
+            <h5 style="margin-bottom: 1rem; color: #ff6600; font-weight: 600;">
+                О системе WorkoutTracker
+            </h5>
+            <p style="text-align: justify; line-height: 1.6;">
+                Добро пожаловать в современную систему учёта тренировок WorkoutTracker.
+                Здесь вы можете планировать свои тринировки, отслеживать выполнение упражнений
+                и анализировать свой прогресс. В вашем распоряжении: журнал тринировок для
+                планирования занятий, каталог упражнений для составления программ и раздел
+                отчётов для анализа результатов. Помните: регулярность - залог успеха!
+                <strong>Здоровье - это свобода.</strong>
             </p>
         </div>
 
-        <h3 style="margin-bottom: 20px; margin-top: 35px;">📊 СВОДКА ПО ЗАКЛЮЧЁННОМУ</h3>
+        <h3 style="margin-bottom: 1.5rem; margin-top: 2rem;">Статистка по вашим тренировкам</h3>
 
         <div class="row">
             <div class="col-md-6 mb-4">
-                <div style="background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); padding: 15px; border: 3px groove #666;">
-                    <h5 style="border-bottom: 3px solid #ff6600; padding-bottom: 10px; margin-bottom: 15px; color: #ff6600;">
-                        💪 НОРМАТИВЫ И УПРАЖНЕНИЯ
-                    </h5>
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                            <tr>
-                                <th>Показатель</th>
-                                <th style="text-align: center; width: 120px;">Учёт</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>🔢 Всего упражнений в каталоге</td>
-                                <td style="text-align: center; font-weight: bold;">{{ stats.total_exercises or 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>🏋️ Силовых (качаем массу)</td>
-                                <td style="text-align: center;">{{ stats.strength_exercises or 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>🏃 Кардио (бег по кругу)</td>
-                                <td style="text-align: center;">{{ stats.cardio_exercises or 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>🤸 Гибкость (растяжка в камере)</td>
-                                <td style="text-align: center;">{{ stats.flexibility_exercises or 0 }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Упражнения</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Показатель</th>
+                                    <th style="text-align: center; width: 120px;">Значение</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Всего упражнений в базе</td>
+                                    <td style="text-align: center; font-weight: bold;">{{ stats.total_exercises or 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Силовых упражнений</td>
+                                    <td style="text-align: center;">{{ stats.strength_exercises or 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Кардио упражнений</td>
+                                    <td style="text-align: center;">{{ stats.cardio_exercises or 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Упражнений на гибкость</td>
+                                    <td style="text-align: center;">{{ stats.flexibility_exercises or 0 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <div class="col-md-6 mb-4">
-                <div style="background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); padding: 15px; border: 3px groove #666;">
-                    <h5 style="border-bottom: 3px solid #ff6600; padding-bottom: 10px; margin-bottom: 15px; color: #ff6600;">
-                        📋 ЖУРНАЛ ОТРАБОТОК
-                    </h5>
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                            <tr>
-                                <th>Показатель</th>
-                                <th style="text-align: center; width: 120px;">Учёт</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>📊 Всего отработок за срок</td>
-                                <td style="text-align: center; font-weight: bold;">{{ stats.total_workouts or 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>📅 Отработок в этом месяце</td>
-                                <td style="text-align: center;">{{ stats.workouts_this_month or 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>🗓️ Отработок на этой неделе</td>
-                                <td style="text-align: center;">{{ stats.workouts_this_week or 0 }}</td>
-                            </tr>
-                            <tr>
-                                <td>⏱️ Средняя длительность (мин.)</td>
-                                <td style="text-align: center;">{{ stats.avg_workout_duration or 0 }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Тринировки</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Показатель</th>
+                                    <th style="text-align: center; width: 120px;">Значение</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Всего тренировок выполнено</td>
+                                    <td style="text-align: center; font-weight: bold;">{{ stats.total_workouts or 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Тренировок в этом месяце</td>
+                                    <td style="text-align: center;">{{ stats.workouts_this_month or 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Тренировок на этой неделе</td>
+                                    <td style="text-align: center;">{{ stats.workouts_this_week or 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Средняя длительность (мин.)</td>
+                                    <td style="text-align: center;">{{ stats.avg_workout_duration or 0 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <h3 style="margin-bottom: 20px; margin-top: 25px;">🗺️ КАРТА ЗОНЫ - РАЗДЕЛЫ СИСТЕМЫ</h3>
+        <h3 style="margin-bottom: 1.5rem; margin-top: 2rem;">Быстрые дйествия</h3>
 
         <div class="row">
             <div class="col-md-4 mb-3">
-                <div style="background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); padding: 20px; border: 3px groove #666; height: 100%;">
-                    <h5 style="margin-bottom: 15px; color: #ff6600;">💪 Нормативы зоны</h5>
-                    <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 15px; color: #ccc; font-family: Arial, sans-serif; font-weight: normal;">
-                        Здесь хранится полный каталог упражнений, доступных заключённым для отработки.
-                        Можешь завести новый норматив, списать устаревший или отредактировать существующий.
-                        Упражнения делятся на категории: силовые (качаем массу), кардио (бег по кругу)
-                        и гибкость (растяжка в камере). Выбирай по своим возможностям!
-                    </p>
-                    <a href="{{ url_for('exercises.list') }}" class="btn btn-primary w-100">
-                        ⛓️ К нормативам зоны
-                    </a>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 style="margin-bottom: 1rem;">Упражнения</h5>
+                        <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: #6c757d;">
+                            Управляйте каталогом доступных упражнений. Добавляйте новые,
+                            редактируйте существующие или удаляйте устаревшие упражения.
+                        </p>
+                        <a href="{{ url_for('exercises.list') }}" class="btn btn-primary w-100">
+                            Перейти к упражнениям
+                        </a>
+                    </div>
                 </div>
             </div>
 
             <div class="col-md-4 mb-3">
-                <div style="background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); padding: 20px; border: 3px groove #666; height: 100%;">
-                    <h5 style="margin-bottom: 15px; color: #ff6600;">📋 Журнал отработок</h5>
-                    <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 15px; color: #ccc; font-family: Arial, sans-serif; font-weight: normal;">
-                        Личная тетрадь учёта всех твоих тренировочных занятий на зоне.
-                        Заводи новые записи об отработках, просматривай историю своих подвигов,
-                        редактируй прошлые записи если что-то напутал. Каждая отработка - это шаг
-                        к досрочному освобождению! Не забывай вести журнал честно.
-                    </p>
-                    <a href="{{ url_for('workouts.list') }}" class="btn btn-primary w-100">
-                        ⛓️ К журналу отработок
-                    </a>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 style="margin-bottom: 1rem;">Тринировки</h5>
+                        <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: #6c757d;">
+                            Просматривайте историю ваших тренировок, добавляйте новые записи
+                            или редактируйте существующие. Ведите дневник тренировок регулярно!
+                        </p>
+                        <a href="{{ url_for('workouts.list') }}" class="btn btn-primary w-100">
+                            Перейти к тренировкам
+                        </a>
+                    </div>
                 </div>
             </div>
 
             <div class="col-md-4 mb-3">
-                <div style="background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); padding: 20px; border: 3px groove #666; height: 100%;">
-                    <h5 style="margin-bottom: 15px; color: #ff6600;">📊 Докладные начальнику</h5>
-                    <p style="font-size: 0.9rem; text-align: justify; margin-bottom: 15px; color: #ccc; font-family: Arial, sans-serif; font-weight: normal;">
-                        Раздел для формирования отчётов и докладных записок начальству зоны.
-                        Здесь можешь посмотреть аналитику по своим тренировкам, проверить статистику
-                        выполнения плана и оценить свой прогресс. Хорошие показатели - путь к УДО!
-                        Начальник любит цифры и графики.
-                    </p>
-                    <a href="{{ url_for('reports.index') }}" class="btn btn-primary w-100">
-                        ⛓️ К докладным
-                    </a>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 style="margin-bottom: 1rem;">Отчёты</h5>
+                        <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: #6c757d;">
+                            Анализируйте свой прогресс с помощью детальных отчётов.
+                            Просматривайте статистику, графики и рекорды по тренировкам.
+                        </p>
+                        <a href="{{ url_for('reports.index') }}" class="btn btn-primary w-100">
+                            Перейти к отчётам
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div style="background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 10px, #1a1a1a 10px, #1a1a1a 20px); padding: 20px; border: 3px groove #666; margin-top: 30px; margin-bottom: 20px;">
-            <h5 style="margin-bottom: 15px; color: #ff6600;">⚠️ ПАМЯТКА ЗАКЛЮЧЁННОГО</h5>
-            <p style="font-size: 0.95rem; text-align: justify; margin-bottom: 10px; color: #fff; font-family: Arial, sans-serif; font-weight: bold;">
-                🔔 В процессе отбывания срока на Шпиц-Зоне рекомендуется регулярно
-                сохранять все изменения в журнале отработок и держать базу данных в актуальном состоянии.
-                При возникновении трудностей с системой обратись к дежурному администратору
-                или вызови техподдержку (кнопка вызова охраны справа). Помни: честный учёт -
-                залог досрочного освобождения!
+        <div class="warning-box">
+            <h5 style="margin-bottom: 1rem; font-weight: 600;">Важная информация</h5>
+            <p style="font-size: 0.95rem; margin-bottom: 0.75rem;">
+                В процессе использования системы WorkoutTracker рекомендуется регулярно
+                сохранять все изменения и вести учёт тренировок своевременно.
+                При возникновении вопросов обратитесь к тренеру или администратору системы.
             </p>
-            <p style="font-size: 0.85rem; margin-bottom: 0; color: #ff6600; font-weight: bold;">
-                ⚡ Система "ШПИЦ-ЗОНА" разработана в соответствии с кодексом исполнения наказаний
-                и требованиями к ведению спортивной документации в местах лишения свободы.
-                Попытки взлома или саботажа караются продлением срока!
+            <p style="font-size: 0.9rem; margin-bottom: 0; font-weight: 500;">
+                Помните: дисциплина и последовательность - ключ к достижению целей.
+                Соблюдайте режим тренировок и питания!
             </p>
         </div>
     </div>

@@ -1,70 +1,60 @@
 {% extends "base.html" %}
 
-{% block title %}Прохождение в зону - ШПИЦ-ЗОНА{% endblock %}
+{% block title %}Вход в систему - WorkoutTracker{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div style="background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); padding: 30px; border: 4px groove #666; margin-top: 30px;">
-            <h2 style="text-align: center; margin-bottom: 25px; color: #ff6600;">
-                🔒 ПРОХОЖДЕНИЕ ЧЕРЕЗ КПП 🔒
-            </h2>
+        <div class="auth-card">
+            <h2>Вход в сстему</h2>
 
-            <p style="text-align: justify; font-size: 0.95rem; color: #ccc; margin-bottom: 20px; font-family: Arial, sans-serif; font-weight: bold;">
-                ⚠️ Для прохождения в качалку строгого режима "ШПИЦ-ЗОНА"
-                необходимо предъявить охране свои учётные данные.
-                Введи логин и пароль в поля ниже. Без документов на зону не пропустят!
+            <p style="text-align: center; font-size: 0.95rem; color: #6c757d; margin-bottom: 1.5rem;">
+                Войдите в свою учётную запись для доступа к системе учёта тренировок
             </p>
 
-            <form method="POST" action="{{ url_for('login') }}">
-                <div class="mb-3">
-                    <label for="username" class="form-label" style="font-weight: bold; color: #ff6600;">
-                        🔑 Логин (кличка заключённого):
-                    </label>
+            <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Логин</label>
                     <input type="text"
                            class="form-control"
                            id="username"
                            name="username"
                            required
-                           style="background-color: #1a1a1a; border: 2px solid #666; color: #fff;"
-                           placeholder="Введи свою кличку"
+                           placeholder="Введите ваш логин"
                            value="{{ request.form.username or '' }}">
-                    <small class="form-text" style="color: #999;">
-                        Та самая кличка, под которой ты числишься на зоне.
+                    <small class="form-text">
+                        Используйте логин, который вы указали при регистрации
                     </small>
                 </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label" style="font-weight: bold; color: #ff6600;">
-                        🔐 Пароль (шифр доступа):
-                    </label>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
                     <input type="password"
                            class="form-control"
                            id="password"
                            name="password"
                            required
-                           style="background-color: #1a1a1a; border: 2px solid #666; color: #fff;"
-                           placeholder="Введи секретный шифр">
-                    <small class="form-text" style="color: #999;">
-                        Тот самый пароль, что давал при постановке на учёт. Не забыл?
+                           placeholder="Введите ваш пароль">
+                    <small class="form-text">
+                        Пароль чувствителен к регистру
                     </small>
                 </div>
 
-                <div class="d-grid gap-2" style="margin-top: 25px;">
+                <div class="d-grid gap-2" style="margin-top: 1.5rem;">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        ⛓️ ВОЙТИ В ЗОНУ
+                        Войти в сстему
                     </button>
                 </div>
             </form>
 
-            <hr style="margin-top: 30px; margin-bottom: 20px; border-color: #666; border-width: 2px;">
+            <hr style="margin: 2rem 0;">
 
-            <div style="text-align: center; background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); padding: 15px; border: 2px groove #666;">
-                <p style="margin: 0; font-size: 0.95rem; color: #ccc; font-weight: bold;">
-                    🆕 Ещё не числишься на зоне? Пройди постановку на учёт!
+            <div class="auth-footer">
+                <p style="margin-bottom: 1rem; color: #6c757d;">
+                    Нет аккаунта? Зарегестрируйтесь прямо сейчас!
                 </p>
-                <a href="{{ url_for('register') }}" class="btn btn-secondary" style="margin-top: 10px;">
-                    📝 ПОСТАНОВКА НА УЧЁТ
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">
+                    Регистрация
                 </a>
             </div>
         </div>
