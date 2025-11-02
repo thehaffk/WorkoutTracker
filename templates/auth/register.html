@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - WorkoutTracker{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Регистрация</h1>
+        
+        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="От 3 до 50 символов"
+                       value="{{ request.form.username or '' }}"
+                       pattern="[A-Za-z0-9_-]+"
+                       title="Только латинские буквы, цифры, _ и -">
+                <small>Только латинские буквы, цифры, _ и -</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="your@email.com"
+                       value="{{ request.form.email or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Минимум 8 символов">
+                <small>Минимум 8 символов, заглавная буква, строчная буква, цифра</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password_confirm">Подтверждение пароля</label>
+                <input type="password" id="password_confirm" name="password_confirm" required 
+                       placeholder="Повторите пароль">
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="is_trainer" value="1">
+                    Я тренер (получу дополнительные права)
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

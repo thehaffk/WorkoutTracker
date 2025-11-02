@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Система управления тренировками{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="{{ url_for('index') }}">💪 WorkoutTracker</a>
+            </div>
+            
+            {% if session.user_id %}
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('workouts_list') }}">Мои тренировки</a></li>
+                <li><a href="{{ url_for('exercises_list') }}">Упражнения</a></li>
+                <li><a href="{{ url_for('calculator') }}">Калькулятор нагрузки</a></li>
+                <li><a href="{{ url_for('reports') }}">Отчёты</a></li>
+                
+                {% if session.is_trainer %}
+                <li><a href="{{ url_for('trainer_panel') }}" class="trainer-link">Панель тренера</a></li>
+                {% endif %}
+                
+                <li class="user-menu">
+                    <span>{{ session.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="btn-logout">Выход</a>
+                </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('login') }}">Вход</a></li>
+                <li><a href="{{ url_for('register') }}">Регистрация</a></li>
+            </ul>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash сообщения -->
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                            <button class="close-alert" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Система управления тренировками. Курсовой проект.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
